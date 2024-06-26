@@ -16,7 +16,16 @@ export default function Login(){
     const [userCredential, setUserCredential] = useState({
         username : '',
         password : ''
-    })
+    });
+
+    function handleSubmit(){
+        if(userCredential.username === "" || userCredential === ""){
+            console.error('Provides your credentials!!!');
+            return;
+        }
+
+        console.log(userCredential);
+    }
 
     return(
         <div className="login_page">
@@ -51,7 +60,7 @@ export default function Login(){
                
             </div>
 
-            <button type="submit" className="button-81" onClick={()=>console.log(userCredential)}>Login</button>
+            <button type="submit" className="button-81" onClick={()=>handleSubmit()}>Login</button>
         </div>
     )
 }

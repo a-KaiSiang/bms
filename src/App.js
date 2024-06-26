@@ -1,20 +1,19 @@
-import logo from './logo.svg';
-import Login from './page/Login';
+import React from "react"
+import Page from "./page/Page"
 
 import './App.css';
 
 function App() {
-  const pageContainer = {
-    // 'width': '100vw',
-    'height' : '100vh',
-    'backgroundColor' : 'skyblue',
-    // 'boxsizing' : 'border-box'
-    // 'minWidth' : '1000px',
+  const container = {
+    boxSizing: 'border-box',
+    width: '100vw',
+    height : '100vh',
+    backgroundColor : 'skyblue',
   }
 
   return (
-    <div style={pageContainer}>
-      <Login />
+    <div style={container}>
+      <Page />
     </div>
   );
 }

@@ -1,0 +1,21 @@
+.gridTable{
+    display: grid;
+    grid-template-columns: 120px 120px 120px 120px 120px;
+    padding: 0 0 0 20px;
+}
+
+.header{
+    grid-column: 1 / span 5;
+    border: 1px solid black;
+    padding-left: 10px;
+}
+
+.name, .distributed, .balance, .expenses, .income{
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    text-align: center;
+}
+
+.income{
+    border-right: 1px solid black;
+}
