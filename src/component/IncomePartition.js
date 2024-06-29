@@ -2,43 +2,45 @@ import React from "react"
 
 import styles from "../css/IncomePartition.module.css"
 
-
 export default function IncomePartition(){
-    const partitionContainer = {
-        border: "1px solid black",
-        width: "50%",
-        height: "60%",
-        position: "absolute",
-        left: 100,
-        top: 100,
-        minWidth: 650
-    }
-
     return (
-        <div style={partitionContainer}>
-            <h1 style={{paddingLeft : "20px"}}>Income Partition</h1>
+        <div className="partitionContainer">
+            <h1 style={{paddingLeft : "20px", margin: "25px 20px"}}>Income Partition</h1>
             <hr></hr>
 
-            <div>
-                <PartitionTemplate />
+            <button className={styles.createNewPartition}>
+                Create new Parition
+            </button>
+
+            <div style={{margin: "10px 0"}}>
+                <PartitionHeader />
                 <PartitionRow />
             </div>
-            
+
+            <div style={{margin: "10px 0"}}>
+                <PartitionHeader />
+                <PartitionRow />
+            </div>
+
+            <div style={{margin: "10px 0"}}>
+                <PartitionHeader />
+                <PartitionRow />
+            </div>
         </div>
     )
 }
 
-function PartitionTemplate(){
+function PartitionHeader(){
     return (
         <div className={styles.gridTable}>
-            <div className={styles.header}>
+            <div style={{backgroundColor:"wheat"}} className={styles.header}>
                 Created at : <span>27-06-2024</span>
             </div>
-            <div className={styles.name}>Name</div>
-            <div className={styles.distributed}>Distributed</div>
-            <div className={styles.balance}>Balance</div>
-            <div className={styles.expenses}>Expenses</div>
-            <div className={styles.income}>Income</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.name}>Name</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.distributed}>Distributed</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.balance}>Balance</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.expenses}>Expenses</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.income}>Income</div>
         </div>
     )
 }
