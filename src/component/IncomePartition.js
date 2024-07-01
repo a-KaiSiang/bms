@@ -9,21 +9,13 @@ export default function IncomePartition(){
             <hr></hr>
 
             <button className={styles.createNewPartition}>
-                Create new Parition
+                Create new Partition
             </button>
 
             <div style={{margin: "10px 0"}}>
                 <PartitionHeader />
                 <PartitionRow />
-            </div>
-
-            <div style={{margin: "10px 0"}}>
-                <PartitionHeader />
                 <PartitionRow />
-            </div>
-
-            <div style={{margin: "10px 0"}}>
-                <PartitionHeader />
                 <PartitionRow />
             </div>
         </div>
