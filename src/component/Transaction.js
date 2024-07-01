@@ -9,6 +9,22 @@ import "react-datepicker/dist/react-datepicker.css";
 export default function Transaction(){
     const [startDate, setStartDate] = useState(new Date());
 
+    function handleClick(){
+        fetch("http://localhost:3030/addTransaction",{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data=>{
+            console.log(data.message);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
     return (
         <div className="partitionContainer">
             <h1 style={{paddingLeft : "20px", margin: "25px 20px"}}>Transaction</h1>
@@ -25,7 +41,11 @@ export default function Transaction(){
 
                 </div>
                 
-                <button type="button" className={styles.createNewPartition}>
+                <button 
+                    type="button" 
+                    className={styles.createNewPartition}
+                    onClick={handleClick}    
+                >
                     <span>Add Transaction</span>
                 </button>
             </div>
