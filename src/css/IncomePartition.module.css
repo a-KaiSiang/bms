@@ -1,15 +1,13 @@
 .partitionContainer {
     border-bottom: 1px solid black;
-    width: 100%;
+    width: 80%;
     height: 40%;
-    min-width: 650px;
+    min-width: 550px;
 }
 
 .createNewPartition {
     height: 40px;
     padding: 10px;
-    position: relative;
-    left: 75%;
     font-weight: bold;
     border-radius: 15px;
     border-width: 1.5px;
@@ -38,6 +36,8 @@
     text-align: center;
     font-size: 1.1rem;
     padding: 3px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .income{

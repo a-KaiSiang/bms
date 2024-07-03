@@ -37,8 +37,6 @@ export default function Transaction(){
                         selected={startDate} 
                         onChange={(date) => setStartDate(date)} dateFormat="MM/yyyy"
                     />
-
-
                 </div>
                 
                 <button 
