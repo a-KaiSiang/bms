@@ -10,15 +10,6 @@
     box-sizing: border-box;
 }
 
-.createNewPartition {
-    min-height: 20px;
-    margin: 10px;
-    font-weight: bold;
-    border-radius: 5px;
-    border:0;
-    cursor: pointer;
-}
-
 .transactionHeader, .transactionRow {
     width: 100%;
     min-height: 50px;

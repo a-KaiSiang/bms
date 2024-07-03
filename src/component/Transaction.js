@@ -41,7 +41,7 @@ export default function Transaction(){
                 
                 <button 
                     type="button" 
-                    className={styles.createNewPartition}
+                    className="createNewPartition"
                     onClick={handleClick}    
                 >
                     <span>Add Transaction</span>

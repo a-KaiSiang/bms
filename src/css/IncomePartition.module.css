@@ -5,19 +5,6 @@
     min-width: 550px;
 }
 
-.createNewPartition {
-    height: 40px;
-    padding: 10px;
-    font-weight: bold;
-    border-radius: 15px;
-    border-width: 1.5px;
-    cursor: pointer;
-}
-
-.createNewPartition:hover{
-    background-color: burlywood;
-}
-
 .gridTable{
     display: grid;
     grid-template-columns: repeat(5,20%);

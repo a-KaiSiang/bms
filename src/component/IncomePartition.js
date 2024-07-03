@@ -23,7 +23,7 @@ export default function IncomePartition(){
                     />
                 </div>
 
-                <button className={styles.createNewPartition}>
+                <button className="createNewPartition">
                     Create new Partition
                 </button>  
             </div>
