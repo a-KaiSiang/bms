@@ -8,21 +8,23 @@ import "react-datepicker/dist/react-datepicker.css";
 
 export default function Transaction(){
     const [startDate, setStartDate] = useState(new Date());
+    const [newTransaction, setNewTransaction] = useState([]);
 
     function handleClick(){
-        fetch("http://localhost:3030/addTransaction",{
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data=>{
-            console.log(data.message);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        // fetch("http://localhost:3030/addTransaction",{
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        // })
+        // .then(response => response.json())
+        // .then(data=>{
+        //     console.log(data.message);
+        // })
+        // .catch(error => {
+        //     console.error('Error:', error);
+        // });
+        setNewTransaction([...newTransaction, {date:startDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
     }
 
     return (
@@ -30,17 +32,17 @@ export default function Transaction(){
             <h1 style={{paddingLeft : "20px", margin: "25px 20px"}}>Transaction</h1>
             <hr></hr>
 
-            <div style={{display:"flex", justifyContent: "space-between",margin: "20px",height: "50px"}}>
+            <div style={{display:"flex", justifyContent: "space-between",margin: "5px",height: "50px"}}>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"baseline",justifyContent:"flex-end"}}>
                     Date :
                     <DatePicker 
                         selected={startDate} 
-                        onChange={(date) => setStartDate(date)} dateFormat="MM/yyyy"
+                        onChange={(date) => setStartDate(date)} dateFormat="dd/MM/yyyy"
                     />
                 </div>
                 
                 <button 
-                    type="button" 
+                    type="button"  
                     className="createNewPartition"
                     onClick={handleClick}    
                 >
@@ -60,19 +62,10 @@ export default function Transaction(){
 
                 <div className={styles.scrollContainer} style={{maxHeight: "300px", overflowY:"scroll", overflowX:"hidden"}}>
                     <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
-                    <TransactionRow />
+                    <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} />
                 </div>
             </div>
-
-           
+            {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}}>Confirm</button></div>}
         </div>
     )
 }
@@ -85,9 +78,108 @@ function TransactionRow() {
             <div className={styles.rowElem + " dcc"}>100</div>
             <div className={styles.rowElem + " dcc"}>-</div>
             <div className={styles.rowElem + " dcc"}>Bank</div>
-            <div className={styles.rowElem}>
-                <button className={styles.createNewPartition + " dcc "}>Edit Transaction</button>
+            <div className={styles.rowElem + " dcc "}>
+                <button className={styles.createNewPartition }>Edit Transaction</button>
             </div>
+        </div>
+    )
+}
+
+function InsertNewTransaction({newTransaction, setNewTransaction}) {
+    const month = [
+        "Jan", "Feb", 'Mar',
+        "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", 
+        "Oct", "Nov", "Dec"
+    ]
+
+    let currentNewTrans = newTransaction.map((elem, idx) => {
+        let dateLastStr = String(elem.date.getDate()).slice(-1);
+        let dateSuffix = "";
+
+        switch(dateLastStr){
+            case "1": 
+                dateSuffix = "st";
+                break;
+            case "2": 
+                dateSuffix = "nd";
+                break;
+            case "3":
+                dateSuffix = "rd";
+                break;
+            default:
+                dateSuffix = "th"
+                break;
+        }
+
+        let date = `${
+            elem.date.getDate() + 
+            dateSuffix + " " +
+            (month[elem.date.getMonth() + 1])
+        }`;
+
+        return(
+            <div key={idx} className={styles.transactionRow}>
+                <div className={styles.rowElem + " dcc"}>{date}</div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    <input
+                        className={styles.inputElem}
+                        value={elem.particular}
+                        onChange={(e)=>{
+                            const newTrans = [...newTransaction]; 
+                            newTrans[idx].particular = e.target.value;
+                            setNewTransaction(newTrans);
+                        }}                        
+                    />
+                </div>
+
+                <div className={styles.rowElem + " dcc"} >
+                    <input
+                        className={styles.inputElem}
+                        value={elem.debit}
+                        onChange={(e)=>{
+                            const newTrans = [...newTransaction];
+                            newTrans[idx].debit = e.target.value;
+                            setNewTransaction(newTrans);
+                        }}
+                    />
+                </div>
+                
+                <div className={styles.rowElem + " dcc"}>
+                    <input
+                        className={styles.inputElem}
+                        value={elem.credit}
+                        onChange={(e)=>{
+                            const newTrans = [...newTransaction];
+                            newTrans[idx].credit = e.target.value;
+                            setNewTransaction(newTrans);
+                        }}
+                    />
+                </div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    <select className={styles.inputElem}>
+                        <option>Partitions should be retrieved from database.</option>
+                        <option>Bank</option>
+                        <option>Touch n Go</option>
+                        <option>Cash</option>
+                    </select>
+                </div>
+
+                <div className={styles.rowElem + " dcc "}>
+                    <button className={styles.createNewPartition} onClick={(ddd)=>{
+                        setNewTransaction(newTransaction.filter((_, index) => idx !== index));
+                    }}>deleteRow
+                    </button>
+                </div>
+            </div>
+        )
+    });
+
+    return(
+        <div>
+            {currentNewTrans}
         </div>
     )
 }

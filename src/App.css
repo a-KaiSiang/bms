@@ -81,3 +81,26 @@
 .createNewPartition:hover{
     background-color: burlywood;
 }
+
+.confirmNewTransaction {
+    display:flex;
+    justify-content: center;
+    margin: 10px;
+    width: 100%;
+}
+
+.confirmNewTransaction button {
+    height: 5vh;
+    border-radius: 10px;
+    border-width: 0.5px;
+}
+
+.confirmNewTransaction button:hover {
+    cursor: pointer;
+    background-color: blanchedalmond;
+}
+
+.confirmNewTransaction button:active {
+    cursor: pointer;
+    background-color: rgb(141, 109, 57);
+}

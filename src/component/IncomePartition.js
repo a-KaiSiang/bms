@@ -28,8 +28,6 @@ export default function IncomePartition(){
                 </button>  
             </div>
              
-
-
             <PartitionCreation />
 
             <div style={{margin: "10px 0", width: "100%"}}>
@@ -70,16 +68,22 @@ function PartitionDataRow({partitionInfo}){
     )
 }
 
-function PartitionTemplateRow({partitionInfo, deleteRow}){
+function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow}){
     const newRow = partitionInfo.map((elem,idx) => (
         <div key={idx} className={styles.gridTable}>
-            
             <div className={styles.name}>
                 <button className="butDeleteRow" onClick={() => {deleteRow(idx);}}>X</button>
                 <input 
                     type="text" 
                     className={styles.name + " inputElem"} 
                     placeholder="PartitionName"
+                    value={elem.name}
+                    onChange={(e)=>{
+                        const newPartitionInfo = [...partitionInfo];
+                        newPartitionInfo[idx].name = e.target.value;
+                        console.log(newPartitionInfo);
+                        setPartitionRow(newPartitionInfo);
+                    }}
                 />
             </div>
            
@@ -88,19 +92,26 @@ function PartitionTemplateRow({partitionInfo, deleteRow}){
                     type="text" 
                     className={styles.distributed + " inputElem"}
                     placeholder="Distributed"
+                    value={elem.distributed}
+                    onChange={(e)=>{
+                        const newPartitionInfo = [...partitionInfo];
+                        newPartitionInfo[idx].distributed = e.target.value;
+                        setPartitionRow(newPartitionInfo);
+                    }}
+                    
                 />
             </div>
 
             <div className={styles.balance}>
-                <span>-</span>
+                <span>{elem.balance}</span>
             </div>
 
             <div className={styles.expenses}>
-                <span>-</span>
+                <span>{elem.expenses}</span>
             </div>
             
             <div className={styles.income}>
-                <span>-</span>
+                <span>{elem.income}</span>
             </div>
         </div>
     ))
@@ -110,50 +121,19 @@ function PartitionTemplateRow({partitionInfo, deleteRow}){
             {newRow}
         </>
     )
-    // return(
-    //     <div className={styles.gridTable}>
-    //         <div className={styles.name}>
-
-    //             <input 
-    //                 type="text" 
-    //                 className={styles.name + " inputElem"} 
-    //                 placeholder="PartitionName"
-    //             />
-    //         </div>
-           
-    //         <div className={styles.distributed}>
-    //             <input 
-    //                 type="text" 
-    //                 className={styles.distributed + " inputElem"}
-    //                 placeholder="Distributed"
-    //             />
-    //         </div>
-
-    //         <div className={styles.balance}>
-    //             <span>-</span>
-    //         </div>
-
-    //         <div className={styles.expenses}>
-    //             <span>-</span>
-    //         </div>
-            
-    //         <div className={styles.income}>
-    //             <span>-</span>
-    //         </div>
-    //     </div>
-    // )
 }
 
 function PartitionCreation(){
     const [partitionRowTemplate, setPartitionRow] = useState([]);
 
-    const partitionDataTemplate = {name:"", distributed:"", balance:"-", expenses:"-", income:"-"}
+    const partitionDataTemplate = {name:"", distributed:"", balance:"0", expenses:"0", income:"0"}
 
     function addRow() {
         setPartitionRow([...partitionRowTemplate, partitionDataTemplate]);
     }
 
     function deleteRow(index) {
+        // console.log(partitionRowTemplate.filter((_, idx) => idx == index));
         setPartitionRow(partitionRowTemplate.filter((_, idx) => idx != index));
     }
 
@@ -164,11 +144,10 @@ function PartitionCreation(){
             </div>
             <div style={{width:"100%", display:"flex", justifyContent:"center", flexDirection:"column"}}>
                 
-                <PartitionTemplateRow partitionInfo={partitionRowTemplate} deleteRow={deleteRow} />
+                <NewPartitionRow partitionInfo={partitionRowTemplate} deleteRow={deleteRow} setPartitionRow={setPartitionRow}/>
 
                 <div style={{width: "100%"}}>
                     <div style={{ display:"flex", alignItems:"center", flexDirection:"column"}}>
-                        
                         <button style={{width: "80%"}} className="addRow" onClick={addRow}>Add row</button>
                         {partitionRowTemplate.length>0 && <button style={{margin: 0}} className="addRow">Confirm</button>}
                     </div>
