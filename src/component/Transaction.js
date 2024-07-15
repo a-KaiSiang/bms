@@ -1,5 +1,6 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
+import { getTransaction } from "../Api";
 
 
 import styles from "../css/Transaction.module.css"
@@ -9,21 +10,23 @@ import "react-datepicker/dist/react-datepicker.css";
 export default function Transaction(){
     const [startDate, setStartDate] = useState(new Date());
     const [newTransaction, setNewTransaction] = useState([]);
+    const [currentTransaction, setCurrentTransaction] = useState([]);
+
+    useEffect(() => {
+        const getTransactionData = async()=>{
+            try{
+                const data = await getTransaction(startDate.getMonth()+1, startDate.getFullYear());
+                setCurrentTransaction(data);
+    
+            }catch(error) {
+                console.error('Error fetching transactions', error);
+    
+            }
+        }
+        getTransactionData();
+    }, [startDate.getMonth(), startDate.getFullYear()])
 
     function handleClick(){
-        // fetch("http://localhost:3030/addTransaction",{
-        //     method: 'GET',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        // })
-        // .then(response => response.json())
-        // .then(data=>{
-        //     console.log(data.message);
-        // })
-        // .catch(error => {
-        //     console.error('Error:', error);
-        // });
         setNewTransaction([...newTransaction, {date:startDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
     }
 
@@ -61,7 +64,7 @@ export default function Transaction(){
                 </div>
 
                 <div className={styles.scrollContainer} style={{maxHeight: "300px", overflowY:"scroll", overflowX:"hidden"}}>
-                    <TransactionRow />
+                    <TransactionRow currentTransaction={currentTransaction}/>
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} />
                 </div>
             </div>
@@ -70,18 +73,31 @@ export default function Transaction(){
     )
 }
 
-function TransactionRow() {
-    return(
-        <div className={styles.transactionRow}>
-            <div className={styles.rowElem + " dcc"}>13rd Jun</div>
-            <div className={styles.rowElem + " dcc"}>Petrol</div>
-            <div className={styles.rowElem + " dcc"}>100</div>
-            <div className={styles.rowElem + " dcc"}>-</div>
-            <div className={styles.rowElem + " dcc"}>Bank</div>
-            <div className={styles.rowElem + " dcc "}>
-                <button className={styles.createNewPartition }>Edit Transaction</button>
+function TransactionRow({currentTransaction}) {
+    const data = currentTransaction.map((trans) => {
+        const date = new Date(`${trans.createdDate}`);
+
+        const formattedDate = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`
+
+        return(
+            <div key={trans.id} className={styles.transactionRow}>
+                <div className={styles.rowElem + " dcc"}>{formattedDate}</div>
+                <div className={styles.rowElem + " dcc"}>{trans.particular}</div>
+                <div className={styles.rowElem + " dcc"}>{(trans.amount) < 0 ? -(trans.amount) : "0"}</div>
+                <div className={styles.rowElem + " dcc"}>{(trans.amount) > 0 ? trans.amount : "0"}</div>
+                <div className={styles.rowElem + " dcc"}>{trans.affectedPartition}</div>
+                <div className={styles.rowElem + " dcc "}>
+                    <button className={styles.createNewPartition }>Edit Transaction</button>
+                </div>
             </div>
-        </div>
+        )
+        
+    })
+
+    return(
+        <>
+            {data}
+        </>
     )
 }
 
