@@ -36,8 +36,7 @@ export default function Transaction(){
             <hr></hr>
 
             <div style={{display:"flex", justifyContent: "space-between",margin: "5px",height: "50px"}}>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"baseline",justifyContent:"flex-end"}}>
-                    Date :
+                <div style={{display:"flex",flexDirection:"column",alignItems:"baseline",justifyContent:"center"}}>
                     <DatePicker 
                         selected={startDate} 
                         onChange={(date) => setStartDate(date)} dateFormat="dd/MM/yyyy"
