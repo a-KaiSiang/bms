@@ -1,7 +1,7 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
 
-import { IncomePartitionDataSample } from "../Api";
+import { IncomePartitionDataSample, getIncome } from "../Api";
 
 
 import styles from "../css/IncomePartition.module.css"
@@ -9,6 +9,24 @@ import styles from "../css/IncomePartition.module.css"
 export default function IncomePartition(){
     const [showInputComponent, setShowInputComponent] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [currentIncome, setCurrentIncome] = useState([]);
+
+    useEffect(()=>{
+        const getLast3MonthIncome = async () => {
+            try{
+                const month = selectedDate.getMonth() + 1;
+                const year = selectedDate.getFullYear();
+
+                const incomeLast3Month  = await getIncome(month, year);
+                setCurrentIncome(incomeLast3Month);
+
+            }catch(error){
+                console.error('Error fetching income: ', error);
+            }
+        }
+
+        getLast3MonthIncome();
+    }, [selectedDate.getMonth(), selectedDate.getFullYear()])
 
     return (
         <div className="partitionContainer">
@@ -19,33 +37,75 @@ export default function IncomePartition(){
                 <div className="datePickerStyle">
                     <DatePicker 
                         selected={selectedDate} 
-                        onChange={(date) => selectedDate(date)} 
+                        onChange={(date) => setSelectedDate(date)} 
                     />
                 </div>
 
-                <button className="createNewPartition">
+                <button className="createNewPartition" onClick={()=>{setShowInputComponent(!showInputComponent)}}>
                     Create new Partition
                 </button>  
             </div>
              
-            <PartitionCreation />
 
-            <div style={{margin: "10px 0", width: "100%"}}>
-                    <PartitionHeader />
-                    {IncomePartitionDataSample.map((elem, index) => (
-                        <PartitionDataRow key={index} partitionInfo={elem} />
-                    ))}
+            <div style={{margin: "10px 0", width: "100%", height: "75%", maxHeight:"500px",overflowX: "hidden"}}>
+                {showInputComponent && <PartitionCreation />}
+                {currentIncome && <PartitionDataRow partitionInfo={currentIncome} />}
             </div>
         </div>
     )
 }
 
-function PartitionHeader(){
+function PartitionDataRow({partitionInfo}){
+    const incomeRecord = partitionInfo.map(elem => {
+        const date = new Date(`${elem.createdDate}`);
 
+        const formattedDate = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`
+        return(
+            <div key={elem.id} className={styles.gridTable} dategroup={formattedDate}>
+                <div className={styles.name}>{elem.partitionName}</div>
+                <div className={styles.distributed}>{elem.distributedAmount}</div>
+                <div className={styles.balance}>{elem.distributedAmount}</div>
+                <div className={styles.expenses}>{elem.distributedAmount}</div>
+                <div className={styles.income}>{elem.totalIncome}</div>
+            </div>
+        )
+    });
+
+    // console.log(incomeRecord[0].props.dategroup);
+    // console.log(incomeRecord[0]);
+
+    let init_date = '';
+    const organizedIncomeRecord = incomeRecord.map(elem => {
+        if(elem.props.dategroup != init_date){
+            init_date = elem.props.dategroup;
+            return(
+                <>
+                    <hr/>
+                    <PartitionHeader createdDate={init_date}/>
+                    {elem}
+                </>
+            )
+        }else{
+            return(
+                <>
+                    {elem}
+                </>
+            )
+        }
+    });
+
+    return(
+        <>
+            {organizedIncomeRecord}
+        </>
+    )
+}
+
+function PartitionHeader({createdDate}){
     return (
         <div className={styles.gridTable}>
             <div style={{backgroundColor:"wheat"}} className={styles.header}>
-                Created at : <span>27-06-2024</span>
+                Created at : <span>{createdDate}</span>
             </div>
             <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.name}>Name</div>
             <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.distributed}>Distributed</div>
@@ -56,14 +116,36 @@ function PartitionHeader(){
     )
 }
 
-function PartitionDataRow({partitionInfo}){
+
+function PartitionCreation(){
+    const [partitionRowTemplate, setPartitionRow] = useState([]);
+
+    const partitionDataTemplate = {name:"", distributed:"", balance:"0", expenses:"0", income:"0"}
+
+    function addRow() {
+        setPartitionRow([...partitionRowTemplate, partitionDataTemplate]);
+    }
+
+    function deleteRow(index) {
+        setPartitionRow(partitionRowTemplate.filter((_, idx) => idx != index));
+    }
+
     return(
-        <div className={styles.gridTable}>
-            <div className={styles.name}>{partitionInfo.name}</div>
-            <div className={styles.distributed}>{partitionInfo.distributed}</div>
-            <div className={styles.balance}>{partitionInfo.balance}</div>
-            <div className={styles.expenses}>{partitionInfo.expenses}</div>
-            <div className={styles.income}>{partitionInfo.income}</div>
+        <div style={{margin: "10px 0", width: "100%", display:'flex', flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
+            <div style={{width:"100%"}}>
+                <PartitionHeader />
+            </div>
+            <div style={{width:"100%", display:"flex", justifyContent:"center", flexDirection:"column"}}>
+                
+                <NewPartitionRow partitionInfo={partitionRowTemplate} deleteRow={deleteRow} setPartitionRow={setPartitionRow}/>
+
+                <div style={{width: "100%"}}>
+                    <div style={{ display:"flex", alignItems:"center", flexDirection:"column"}}>
+                        <button style={{width: "80%"}} className="addRow" onClick={addRow}>Add row</button>
+                        {partitionRowTemplate.length>0 && <button style={{margin: 0}} className="addRow">Confirm</button>}
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
@@ -71,8 +153,9 @@ function PartitionDataRow({partitionInfo}){
 function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow}){
     const newRow = partitionInfo.map((elem,idx) => (
         <div key={idx} className={styles.gridTable}>
-            <div className={styles.name}>
-                <button className="butDeleteRow" onClick={() => {deleteRow(idx);}}>X</button>
+            <div className={styles.name} style={{display:"flex"}}>
+                <button className="butDeleteRow" onClick={() => {deleteRow(idx);}}></button>
+
                 <input 
                     type="text" 
                     className={styles.name + " inputElem"} 
@@ -81,7 +164,7 @@ function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow}){
                     onChange={(e)=>{
                         const newPartitionInfo = [...partitionInfo];
                         newPartitionInfo[idx].name = e.target.value;
-                        console.log(newPartitionInfo);
+                        // console.log(newPartitionInfo);
                         setPartitionRow(newPartitionInfo);
                     }}
                 />
@@ -120,39 +203,5 @@ function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow}){
         <>
             {newRow}
         </>
-    )
-}
-
-function PartitionCreation(){
-    const [partitionRowTemplate, setPartitionRow] = useState([]);
-
-    const partitionDataTemplate = {name:"", distributed:"", balance:"0", expenses:"0", income:"0"}
-
-    function addRow() {
-        setPartitionRow([...partitionRowTemplate, partitionDataTemplate]);
-    }
-
-    function deleteRow(index) {
-        // console.log(partitionRowTemplate.filter((_, idx) => idx == index));
-        setPartitionRow(partitionRowTemplate.filter((_, idx) => idx != index));
-    }
-
-    return(
-        <div style={{margin: "10px 0", width: "100%", display:'flex', flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
-            <div style={{width:"100%"}}>
-                <PartitionHeader />
-            </div>
-            <div style={{width:"100%", display:"flex", justifyContent:"center", flexDirection:"column"}}>
-                
-                <NewPartitionRow partitionInfo={partitionRowTemplate} deleteRow={deleteRow} setPartitionRow={setPartitionRow}/>
-
-                <div style={{width: "100%"}}>
-                    <div style={{ display:"flex", alignItems:"center", flexDirection:"column"}}>
-                        <button style={{width: "80%"}} className="addRow" onClick={addRow}>Add row</button>
-                        {partitionRowTemplate.length>0 && <button style={{margin: 0}} className="addRow">Confirm</button>}
-                    </div>
-                </div>
-            </div>
-        </div>
     )
 }
