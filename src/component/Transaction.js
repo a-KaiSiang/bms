@@ -13,6 +13,7 @@ export default function Transaction(){
     const [currentTransaction, setCurrentTransaction] = useState([]);
 
     useEffect(() => {
+
         const getTransactionData = async()=>{
             try{
                 const data = await getTransaction(startDate.getMonth()+1, startDate.getFullYear());
@@ -28,6 +29,10 @@ export default function Transaction(){
 
     function handleClick(){
         setNewTransaction([...newTransaction, {date:startDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
+    }
+
+    function handleSubmit(){
+        
     }
 
     return (
@@ -67,12 +72,16 @@ export default function Transaction(){
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} />
                 </div>
             </div>
-            {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}}>Confirm</button></div>}
+            {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}} onClick={handleSubmit}>Confirm</button></div>}
         </div>
     )
 }
 
 function TransactionRow({currentTransaction}) {
+    if(!currentTransaction){
+        return;
+    }
+
     const data = currentTransaction.map((trans) => {
         const date = new Date(`${trans.createdDate}`);
 

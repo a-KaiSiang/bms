@@ -16,8 +16,8 @@ export default function Page(){
             <Router>
                 <div className={styles.mainWindow} >
                     <div className={styles.navigationBar}>
-                        <div className="dcc" style={{width:"100%",height:"18%",background:"rgb(100,100,131)",borderBottom: "1px solid black"}}>
-                            <span style={{fontWeight: 650, fontSize:"1.2em", paddingLeft: "20px"}}>Budget Managament System</span>
+                        <div className="dcc" style={{width:"100%",height:"18%",background:"wheat",borderBottom: "1px solid black"}}>
+                            <span style={{fontWeight: 650, fontSize:"1.2em"}}>Budget Managament System</span>
                         </div>
                         <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
                         <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>

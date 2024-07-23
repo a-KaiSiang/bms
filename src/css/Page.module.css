@@ -12,8 +12,8 @@
     /* min-width: 860px;
     max-width: 1500px; */
     height: 100%;
-    background-color: rgb(24, 107, 202);
-    /* background-color: rgba(243, 110, 34, 0.973); */
+    /* background-color: rgb(24, 107, 202); */
+    background-color: rgba(53, 52, 52, 0.5);
 }
 
 .navigationBar {
@@ -22,6 +22,8 @@
     height: 100%;
     border: 1px solid black;
     border-bottom: 0;
+    background-color: aliceblue;
+
     /* margin: 20px */
 }
 
