@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
 
-import { /*IncomePartitionDataSample,*/ getIncome } from "../Api";
+import { /*IncomePartitionDataSample,*/ getIncome, createNewIncomePartition } from "../Api";
 
 
 import styles from "../css/IncomePartition.module.css"
@@ -38,6 +38,7 @@ export default function IncomePartition(){
                     <DatePicker 
                         selected={selectedDate} 
                         onChange={(date) => setSelectedDate(date)} 
+                        dateFormat={'dd-MM-yyyy'}
                     />
                 </div>
 
@@ -48,7 +49,7 @@ export default function IncomePartition(){
              
 
             <div style={{margin: "10px 0", width: "100%", height: "75%", maxHeight:"500px",overflowX: "hidden"}}>
-                {showInputComponent && <PartitionCreation />}
+                {showInputComponent && <PartitionCreation selectedDate={selectedDate}/>}
                 {currentIncome && <PartitionDataRow partitionInfo={currentIncome} />}
             </div>
         </div>
@@ -117,12 +118,13 @@ function PartitionHeader({createdDate}){
 }
 
 
-function PartitionCreation(){
+function PartitionCreation({selectedDate}){
     const [partitionRow, setPartitionRow] = useState([]);
     const [income, setIncome] = useState('');
 
-    const partitionDataTemplate = {name:"", distributed:"", balance:"-", expenses:"-", income:""}
+    const partitionDataTemplate = {name:"", distributed:"", balance:"-", expenses:"-"}
 
+    const formattedDate = `${selectedDate.getDate()}-${selectedDate.getMonth()+1}-${selectedDate.getFullYear()}`
     function addRow() {
         setPartitionRow([...partitionRow, partitionDataTemplate]);
     }
@@ -131,35 +133,46 @@ function PartitionCreation(){
         setPartitionRow(partitionRow.filter((_, idx) => idx !== index));
     }
 
-    function handleSubmit(){
-        console.log(partitionRow);
+    async function handleSubmit(){
+        // console.log(partitionRow);
         // Validate name. (length should greater than 2)
+        const failCase_AllPartitionName = partitionRow.filter(elem => elem.name === '');
         // Validate distributed amount. (should be able to parse to float)
-        // Validate total income. ( should be able to parse to float)
-        const failCase_AllPartitionName = partitionRow.filter(elem => elem.name === "");
         const failCase_AllDistributed = partitionRow.filter(elem => isNaN(parseFloat(elem.distributed)));
-        const failCase_AllIncome = partitionRow.filter(elem => isNaN(parseFloat(elem.income)));
-        if(!failCase_AllPartitionName || !failCase_AllDistributed || !failCase_AllIncome){
-            alert("Invalid input on partition name, distributed or income");
+        // Validate total income. ( should be able to parse to float)
+        const failCase_AllIncome = isNaN(parseFloat(income));
+        if(failCase_AllPartitionName.length > 0){
+            alert("Invalid input on partition name");
+            return;
+        }else if(failCase_AllDistributed.length > 0){
+            alert("Invalid input on distributed amount");
+            return;
+        }else if(failCase_AllIncome){
+            console.log(failCase_AllIncome)
+            alert("Invalid input on income");
+            return;
         }
 
         // validate whether total of distributed is tally with income.
-        const totalOfDistributed = partitionRow.reduce((total, current)=>(total + current));
-        console.log(totalOfDistributed);
-        if(parseFloat(totalOfDistributed.distributed).toFixed(2) !== parseFloat(income).toFixed(2)){
-            console.error(totalOfDistributed);
+        const totalOfDistributed = partitionRow.reduce((total, current)=>(total + parseFloat(current.distributed)), 0);
+        // console.log(totalOfDistributed);
+        if(parseFloat(totalOfDistributed).toFixed(2) !== parseFloat(income).toFixed(2)){
+            // console.log(totalOfDistributed);
             alert("Total distributed should be same with income provided.");
+            return;
         }
 
-        console.log('kkkk');
+        // console.log('kkkk');
 
         // call API to fetch request to /addIncomeTransaction.
+        //date, {parititionrow, income}
+        const response = await createNewIncomePartition(selectedDate, {partitionRow: partitionRow, totalIncome: income});
     }
 
     return(
         <div style={{margin: "10px 0", width: "100%", display:'flex', flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
             <div style={{width:"100%"}}>
-                <PartitionHeader />
+                <PartitionHeader createdDate={formattedDate}/>
             </div>
             <div style={{width:"100%", display:"flex", justifyContent:"center", flexDirection:"column"}}>
                 
