@@ -4,10 +4,11 @@
 
 .transactionTable {
     min-height: 200px;
-    width: 100%;
-    border: 2px solid black;
-    border-left: 1px solid black;
+    width: 80%;
+    /* border: 2px solid black; */
+    /* border-left: 1px solid black; */
     box-sizing: border-box;
+    margin-left: 50px;
 }
 
 .transactionHeader, .transactionRow {

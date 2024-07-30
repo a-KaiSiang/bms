@@ -19,6 +19,7 @@
 .navigationBar {
     box-sizing: border-box;
     width: 20%;
+    min-width: 200px;
     height: 100%;
     border: 1px solid black;
     border-bottom: 0;

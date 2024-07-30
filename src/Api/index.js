@@ -31,7 +31,7 @@ async function getTransaction(month, year){
         }
 
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
 
         return data;
     }catch(error){
@@ -84,7 +84,41 @@ async function createNewIncomePartition(date, incomePartition){
     }
 }
 
+async function getIncomePartition(date){
+    if(typeof(date) !== "object"){
+        throw new Error("Date format error.");
+    }
+
+    try {
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+
+        console.log(year);
+        const url = `${serverUrl}/main/getIncomePartition?m=${month}&y=${year}`;
+        const response = await fetch(url);
+
+        if(!response.ok){
+            const errorData = await response.json();
+            throw errorData;
+        }
+
+        const data = await response.json();
+        // console.log(data);
+
+        if(Object.keys(data).includes('errMsg')){
+            console.log("Handling error. Please contact admin.");
+            throw data;
+        }
+
+        // console.log(data);
+        return data;
+        
+    } catch (error) {
+        throw error;
+    }
+}
 exports.IncomePartitionDataSample = IncomePartitionDataSample;
 exports.getTransaction = getTransaction;
 exports.getIncome = getIncome;
 exports.createNewIncomePartition = createNewIncomePartition;
+exports.getIncomePartition = getIncomePartition;
