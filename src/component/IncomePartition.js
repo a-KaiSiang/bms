@@ -1,9 +1,7 @@
 import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
 
-import { /*IncomePartitionDataSample,*/ getIncome, createNewIncomePartition } from "../Api";
-
-
+import { getIncome, createNewIncomePartition } from "../Api";
 import styles from "../css/IncomePartition.module.css"
 
 export default function IncomePartition(){
@@ -30,7 +28,7 @@ export default function IncomePartition(){
 
     return (
         <div className="partitionContainer">
-            <h1 style={{paddingLeft : "20px", margin: "25px 20px", color:"whitesmoke"}}>Income Partition</h1>
+            <h1 style={{paddingLeft : "20px", margin: "25px 20px", color:"whitesmoke"}}>Income Distribution</h1>
             <hr></hr>
 
             <div className="createNewContainer">
@@ -65,9 +63,10 @@ function PartitionDataRow({partitionInfo}){
             <div key={elem.id} className={styles.gridTable} dategroup={formattedDate}>
                 <div className={styles.name}>{elem.partitionName}</div>
                 <div className={styles.distributed}>{elem.distributedAmount}</div>
-                <div className={styles.balance}>{elem.distributedAmount}</div>
                 <div className={styles.expenses}>{elem.distributedAmount}</div>
                 <div className={styles.income}>{elem.totalIncome}</div>
+                <div className={styles.balance}>{elem.distributedAmount}</div>
+
             </div>
         )
     });
@@ -109,10 +108,11 @@ function PartitionHeader({createdDate}){
                 Created at : <span>{createdDate}</span>
             </div>
             <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.name}>Name</div>
-            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.distributed}>Distributed</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.distributed}>Initial Distributed</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.expenses}>Total Expenses</div>
+            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.income}>Total Income</div>
             <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.balance}>Balance</div>
-            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.expenses}>Expenses</div>
-            <div style={{backgroundColor:"lightgray", fontWeight: "500"}} className={styles.income}>Income</div>
+
         </div>
     )
 }
@@ -120,11 +120,10 @@ function PartitionHeader({createdDate}){
 
 function PartitionCreation({selectedDate}){
     const [partitionRow, setPartitionRow] = useState([]);
-    const [income, setIncome] = useState('');
 
-    const partitionDataTemplate = {name:"", distributed:"", balance:"-", expenses:"-"}
+    const partitionDataTemplate = {name:"", distributed:"", totalExpenses:"-", totalIncome:"-" ,balance:"-"};
+    const formattedDate = `${selectedDate.getDate()}-${selectedDate.getMonth()+1}-${selectedDate.getFullYear()}`;
 
-    const formattedDate = `${selectedDate.getDate()}-${selectedDate.getMonth()+1}-${selectedDate.getFullYear()}`
     function addRow() {
         setPartitionRow([...partitionRow, partitionDataTemplate]);
     }
@@ -134,39 +133,29 @@ function PartitionCreation({selectedDate}){
     }
 
     async function handleSubmit(){
-        // console.log(partitionRow);
-        // Validate name. (length should greater than 2)
-        const failCase_AllPartitionName = partitionRow.filter(elem => elem.name === '');
-        // Validate distributed amount. (should be able to parse to float)
-        const failCase_AllDistributed = partitionRow.filter(elem => isNaN(parseFloat(elem.distributed)));
-        // Validate total income. ( should be able to parse to float)
-        const failCase_AllIncome = isNaN(parseFloat(income));
-        if(failCase_AllPartitionName.length > 0){
-            alert("Invalid input on partition name");
-            return;
-        }else if(failCase_AllDistributed.length > 0){
-            alert("Invalid input on distributed amount");
-            return;
-        }else if(failCase_AllIncome){
-            console.log(failCase_AllIncome)
-            alert("Invalid input on income");
+        try {
+            // Validate name. (length should greater than 2)
+            const failCase_AllPartitionName = partitionRow.filter(elem => elem.name === '');
+            // Validate distributed amount. (should be able to parse to float)
+            const failCase_AllDistributed = partitionRow.filter(elem => isNaN(parseFloat(elem.distributed)));
+
+            if(failCase_AllPartitionName.length > 0){
+                alert("Invalid input on partition name");
+                return;
+            }else if(failCase_AllDistributed.length > 0){
+                alert("Invalid input on distributed amount");
+                return;
+            }
+            // validate whether total of distributed is tally with income.
+            const totalOfDistributed = partitionRow.reduce((total, current)=>(total + parseFloat(current.distributed)), 0);
+
+            // call API to fetch request to /addIncomeTransaction.
+            await createNewIncomePartition(selectedDate, {partitionRow: partitionRow});
+        } catch (error) {
+            console.error(error);
+            alert(error);
             return;
         }
-
-        // validate whether total of distributed is tally with income.
-        const totalOfDistributed = partitionRow.reduce((total, current)=>(total + parseFloat(current.distributed)), 0);
-        // console.log(totalOfDistributed);
-        if(parseFloat(totalOfDistributed).toFixed(2) !== parseFloat(income).toFixed(2)){
-            // console.log(totalOfDistributed);
-            alert("Total distributed should be same with income provided.");
-            return;
-        }
-
-        // console.log('kkkk');
-
-        // call API to fetch request to /addIncomeTransaction.
-        //date, {parititionrow, income}
-        const response = await createNewIncomePartition(selectedDate, {partitionRow: partitionRow, totalIncome: income});
     }
 
     return(
@@ -176,7 +165,7 @@ function PartitionCreation({selectedDate}){
             </div>
             <div style={{width:"100%", display:"flex", justifyContent:"center", flexDirection:"column"}}>
                 
-                <NewPartitionRow partitionInfo={partitionRow} deleteRow={deleteRow} setPartitionRow={setPartitionRow} income={income} setIncome={setIncome}/>
+                <NewPartitionRow partitionInfo={partitionRow} deleteRow={deleteRow} setPartitionRow={setPartitionRow}/*income={income} setIncome={setIncome}*//>
 
                 <div style={{width: "100%"}}>
                     <div style={{ display:"flex", alignItems:"center", flexDirection:"column"}}>
@@ -189,7 +178,7 @@ function PartitionCreation({selectedDate}){
     )
 }
 
-function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow, income, setIncome}){
+function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow}){
     const newRow = partitionInfo.map((elem,idx) => (
         <div key={idx} className={styles.gridTable}>
             <div className={styles.name} style={{display:"flex"}}>
@@ -229,16 +218,13 @@ function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow, income, set
                 />
             </div>
 
-            <div className={styles.balance}>
-                <span>{elem.balance}</span>
-            </div>
 
             <div className={styles.expenses}>
-                <span>{elem.expenses}</span>
+                <span>{elem.totalExpenses}</span>
             </div>
             
             <div className={styles.income}>
-                <input
+                {/* <input
                     type="text"
                     className={`${styles.income} inputElem`}
                     placeholder="Total Income"
@@ -252,7 +238,12 @@ function NewPartitionRow({partitionInfo, deleteRow, setPartitionRow, income, set
                             setIncome(value);
                         }
                     }}
-                />
+                /> */}
+                -
+            </div>
+            
+            <div className={styles.balance}>
+                <span>{elem.balance}</span>
             </div>
         </div>
     ))

@@ -50,6 +50,7 @@ async function createNewIncomePartition(date, incomePartition){
         const createdMonth = date.getMonth() + 1; 
         const createdYear = date.getFullYear();
 
+        console.log(incomePartition);
         console.log(date);
         const bodyData = { 
             date: {
@@ -59,7 +60,7 @@ async function createNewIncomePartition(date, incomePartition){
             ... incomePartition
         }
 
-        const node = `${serverUrl}/addTransaction`;
+        const url = `${serverUrl}/main/addIncomePartition`;
         const reqConfig = {
             method: "POST",
             headers: {
@@ -68,15 +69,18 @@ async function createNewIncomePartition(date, incomePartition){
             body: JSON.stringify(bodyData),
         }
 
-        const response = await fetch(node, reqConfig);
+        const response = await fetch(url, reqConfig);
         if(!response.ok){
-            throw new Error('Error when sending request to create income parititon.');
+            const errorData = await response.json();
+            console.log(errorData);
+            throw errorData.errMessage;
         }
 
         const data = await response.json();
         return data;
     }catch(error){
         console.error(error);
+        throw error;
     }
 }
 
