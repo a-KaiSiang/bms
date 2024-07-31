@@ -21,18 +21,24 @@
 }
 
 .headerElem, .rowElem {
-    border-right: 2px solid black;
-    border-bottom: 2px solid black;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+   
     font-size: 0.8em;
 }
 
 .headerElem {
     font-weight: 500;
+    border-top: 1px solid black;
 }
 
-.headerElem:last-child, .rowElem:last-child{
-    border-right: none;
+.headerElem:first-child, .rowElem:first-child{
+    border-left: 1px solid black;
 }
+
+/* .headerElem:last-child, .rowElem:last-child{
+    border-right: none; 
+} */
 
 .rowElem {
     font-size: 0.9em;

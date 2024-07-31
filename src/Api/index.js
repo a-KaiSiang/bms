@@ -117,8 +117,41 @@ async function getIncomePartition(date){
         throw error;
     }
 }
+
+async function addNewTransaction(newTransactions){
+    console.log(newTransactions);
+    try {
+        const url = `${serverUrl}/main/insertNewTransaction`
+        const bodyData = {
+            t: newTransactions
+        }
+        const reqConfig = {
+            method: "POST", 
+            headers: {
+                "Content-type" : "application/json",
+            },
+            body: JSON.stringify(bodyData),
+        }
+
+        const res = await fetch(url, reqConfig);
+        if(!res.ok){
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        const queryResult = await res.json();
+
+        console.log(queryResult);
+        return queryResult;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 exports.IncomePartitionDataSample = IncomePartitionDataSample;
 exports.getTransaction = getTransaction;
 exports.getIncome = getIncome;
 exports.createNewIncomePartition = createNewIncomePartition;
 exports.getIncomePartition = getIncomePartition;
+exports.addNewTransaction = addNewTransaction;

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
-import { getTransaction, getIncomePartition } from "../Api";
+import { getTransaction, getIncomePartition, addNewTransaction } from "../Api";
 
 import styles from "../css/Transaction.module.css"
 import "react-datepicker/dist/react-datepicker.css";
@@ -49,8 +49,37 @@ export default function Transaction(){
         setNewTransaction([...newTransaction, {date:transactionDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
     }
 
-    function handleSubmit(){
+    async function handleSubmit(){
         console.log(newTransaction);
+        try {
+            //check if newTransaction is filled with data.
+            if(newTransaction.length === 0){
+                throw "New transaction has not set yet.Don't be stupid";
+            }
+
+            let failCase = newTransaction.filter(transactionRow => (
+                //return if affectedPartition has no value.
+                transactionRow.affectedPartition.length === 0 ||
+                //return if affectedPartition does not exist.
+                !incomePartition.includes(transactionRow.affectedPartition) ||
+                //return if debit and credit have value at the same time.
+                (transactionRow.debit.length !== 0 && transactionRow.credit.length !== 0) || 
+                //return if particular does not contain value.
+                transactionRow.particular.length === 0
+            ))
+
+            if(failCase.length !== 0){
+                throw "Input error. Please check your new transaction.";
+            }
+
+            const result = await addNewTransaction(newTransaction);
+            
+            alert(result.msg);
+        } catch (error) {
+            console.log(error);
+            alert(error);
+            return;
+        }
     }
 
     return (
@@ -133,10 +162,30 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
         "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", 
         "Oct", "Nov", "Dec"
-    ]
+    ];
+
+    useEffect(()=>{
+        const initializeNewTransaction = async () => {
+            // console.log(newTransaction);
+            let initNewTransactionRow =  [...newTransaction];
+            console.log(initNewTransactionRow);
+            initNewTransactionRow.forEach(rowData => {
+                if(incomePartition.length === 0){
+                    alert('Failed to retrieve income partition for current month.');
+                    return;
+                }
+                rowData.affectedPartition = incomePartition[0];
+            })
+
+            setNewTransaction(initNewTransactionRow);
+        }
+
+        initializeNewTransaction();
+    },[newTransaction.length]);
 
     function handleAffectedPartChange(e, index){
-        console.log(e.target.value);
+        // console.log(incomePartition);
+        // console.log(e.target.value);
         const newPartitionName = e.target.value;
         let newTrans = [...newTransaction];
         newTrans[index].affectedPartition = newPartitionName;
@@ -176,7 +225,7 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
                     <input
                         className={styles.inputElem}
                         value={elem.particular}
-                        maxLength={10}
+                        maxLength={20}
                         onChange={(e)=>{
                             const newTrans = [...newTransaction]; 
                             newTrans[idx].particular = e.target.value;
