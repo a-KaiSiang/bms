@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
-import { getTransaction, getIncomePartition, addNewTransaction } from "../Api";
+import { getTransaction, getIncomePartition, addNewTransaction, modifyTransaction } from "../Api";
 
 import styles from "../css/Transaction.module.css"
 import "react-datepicker/dist/react-datepicker.css";
@@ -37,7 +37,7 @@ export default function Transaction(){
                 
             } catch (error) {
                 console.error(error.errMsg);
-                alert(error.errMsg);
+                // alert(error.errMsg);
                 setIncomePartition([]);
             }           
         }
@@ -110,12 +110,13 @@ export default function Transaction(){
                     <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Particular</div>
                     <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Debit</div>
                     <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Credit</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Affected Partition</div>
+                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3", textAlign:"center"}}>Affected Partition</div>
+                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
                     <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
                 </div>
 
                 <div className={styles.scrollContainer} style={{maxHeight: "300px", overflowY:"scroll", overflowX:"hidden"}}>
-                    <TransactionRow currentTransaction={currentTransaction}/>
+                    <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} incomePartition={incomePartition}/>
                 </div>
             </div>
@@ -124,26 +125,251 @@ export default function Transaction(){
     )
 }
 
-function TransactionRow({currentTransaction}) {
-    if(!currentTransaction){
-        return;
+function TransactionRow({currentTransaction, incomePartition}) {
+    function initializeEditState(){
+        if(currentTransaction.length === 0){
+            return;
+        }
+        return ( 
+            currentTransaction.reduce((initializedRow, transRow) => {
+                return {
+                    ...initializedRow, 
+                    [transRow.id] : false
+                }
+            }, {})
+        )
     }
 
-    const data = currentTransaction.map((trans) => {
+    console.log(currentTransaction);
+    const [bufferForEditingTran, setBufferForEditingTran] = useState([]);
+    const [editingTransaction, setEditingTransaction] = useState(initializeEditState());
+    
+    useEffect(() => {
+        const checkCurrentTransaction = async () => {
+            if(currentTransaction.length === 0){
+                console.log('No current transaction at this month');
+                return;
+            }
+            const eee = initializeEditState();
+                
+            console.log(eee);
+            setEditingTransaction(eee);
+            console.log('Current transaction at this month found');
+        }
+
+        checkCurrentTransaction()
+    }, [currentTransaction])
+
+    useEffect(() => {
+        //In default, array and object will be parsed as references, 
+        //which imply that modification on any variable that been assign with the original object/array will affect the original variable too. 
+        //To avoid unintentional modification made on origial variable, parse them to string and parse them to array/object subsequently.
+        const transactionBuffer = JSON.parse(JSON.stringify(currentTransaction));
+        const formattedTransactionBuffer = transactionBuffer.map(row => {
+            const {affectedPartition, amount, createdDate, id, particular} = row;
+            const bufferDataToReceiveInput = {
+                id: id, 
+                createdDate: createdDate,
+                particular: particular,
+                debit : parseFloat(amount) < 0 ? (amount*-1)  : 0,
+                credit : parseFloat(amount) > 0 ? amount : 0,
+                affectedPartition : affectedPartition, 
+            }
+            return bufferDataToReceiveInput;
+        })
+
+        setBufferForEditingTran(formattedTransactionBuffer);
+    }, [currentTransaction])
+
+    useEffect(()=>{
+        console.log(bufferForEditingTran)
+    }, [bufferForEditingTran]);
+
+    function handleEdit(transactionId){
+        console.log(transactionId);
+        const enableItemToUpdate = {
+            ...editingTransaction,
+            [`${transactionId}`] : true
+        }
+        console.log(editingTransaction);
+
+        setEditingTransaction(enableItemToUpdate);
+    }
+
+    function handleCancel(transactionId, idx){
+        // disable edit status.
+        const disableItemToUpdate = {
+            ...editingTransaction,
+            [`${transactionId}`] : false
+        }
+        setEditingTransaction(disableItemToUpdate);
+
+        //revert changes made while edit is enabled.
+        const revertedArr = bufferForEditingTran.map((dataRow, i) => {
+            if(i === idx){
+                const originalTransOfRow = JSON.parse(JSON.stringify(currentTransaction[i]));
+                const {id, createdDate, particular, amount, affectedPartition} = originalTransOfRow;
+
+                const formattedData = {
+                    id: id, 
+                    createdDate : createdDate, 
+                    particular : particular, 
+                    debit: parseFloat(amount) < 0 ? amount*-1 : 0, 
+                    credit: parseFloat(amount) > 0 ? amount : 0,
+                    affectedPartition: affectedPartition
+                } 
+
+                return formattedData;
+            }else{
+                return dataRow;
+            }
+        });
+        console.log(revertedArr);
+        setBufferForEditingTran(revertedArr);
+    }
+
+    async function handleSave(transactionId){
+        try {
+            //validate.
+            const savingData = bufferForEditingTran.filter(bufferRow => bufferRow.id === transactionId);
+            // console.log(savingData[0]);
+
+            //id must be unique.
+            if(savingData.length !== 1){
+                alert('Id must be unique, please contact admin.');
+                return;
+            }
+
+            //modifications must be made.
+            const originalDataOfModifiedRow = currentTransaction.filter(currentRow => currentRow.id === transactionId);
+            const debitCredit = JSON.parse(JSON.stringify(savingData[0]));
+            const organizeDebitCreditToAmount = [{
+                id:debitCredit.id, 
+                createdDate: debitCredit.createdDate, 
+                particular: debitCredit.particular, 
+                amount: debitCredit.debit > 0 ? `${parseFloat(-1*debitCredit.debit).toFixed(2)}` : `${parseFloat(debitCredit.credit).toFixed(2)}`,
+                affectedPartition: debitCredit.affectedPartition
+            }];
+
+            const checkDataModified = JSON.stringify(organizeDebitCreditToAmount) !== JSON.stringify(originalDataOfModifiedRow) ? true : false;
+
+            if(!checkDataModified){
+                alert('Changes are essential to update data.');
+                return;
+            }
+
+            //particular name should be set.
+            const checkParticularNameSet = savingData[0].particular.length > 0 ? true : false;
+            if(!checkParticularNameSet){
+                alert('Particular name should not be empty');
+                return;
+            }
+
+            //either debit or credit should be entered, but not both of them.
+            const doDebitSideHasValue = parseFloat(savingData[0].debit) !== 0 ? true : false;
+            const doCreditSideHasValue = parseFloat(savingData[0].credit) !== 0 ? true : false;
+            const checkIfAmountValid = doDebitSideHasValue !== doCreditSideHasValue ? true : false;
+            if(!checkIfAmountValid){
+                alert('Debit and credit side could not have the same value at the same time.');
+                return;
+            }
+
+            //Affected partition should be valid.
+            const doesAffectedPartitionValid = incomePartition.includes(savingData[0].affectedPartition) ? true : false;
+            if(!doesAffectedPartitionValid){
+                alert('Income partition should be valid');
+                return;
+            }
+
+            //send to database.
+            const result = await modifyTransaction(savingData[0]);
+
+            if(result.msg){
+                alert(result.msg);
+            }
+            setEditingTransaction(initializeEditState());
+
+        } catch (error) {
+            console.error(error);
+            alert(error);
+        }
+    }
+
+    function handleDelete(transactionId){
+        //get id of deleting row.
+
+        //validate.
+
+        //send request to database.
+    }
+
+    const data = bufferForEditingTran.map((trans, idx) => {
         const date = new Date(`${trans.createdDate}`);
 
         const formattedDate = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`
 
         return(
             <div key={trans.id} className={styles.transactionRow}>
-                <div className={styles.rowElem + " dcc"}>{formattedDate}</div>
-                <div className={styles.rowElem + " dcc"}>{trans.particular}</div>
-                <div className={styles.rowElem + " dcc"}>{(trans.amount) < 0 ? -(trans.amount) : "0"}</div>
-                <div className={styles.rowElem + " dcc"}>{(trans.amount) > 0 ? trans.amount : "0"}</div>
-                <div className={styles.rowElem + " dcc"}>{trans.affectedPartition}</div>
-                <div className={styles.rowElem + " dcc "}>
-                    <button className={styles.createNewPartition }>Edit Transaction</button>
+                <div className={styles.rowElem + " dcc"}>
+                    {formattedDate}
                 </div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    {  
+                        editingTransaction[trans.id] ? 
+                        <input 
+                            className={styles.inputElem}
+                            value={trans.particular}
+                            onChange={(e) => {
+                                const editedParticular = e.target.value;
+                                const editedData = JSON.parse(JSON.stringify(bufferForEditingTran));
+                                editedData[idx].particular = editedParticular;
+                                setBufferForEditingTran(editedData);
+                            }}
+                        /> : 
+                        <div>
+                            {trans.particular}
+                        </div>
+                    }
+                </div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    {(trans.debit)}
+                </div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    {(trans.credit)}
+                </div>
+
+                <div className={styles.rowElem + " dcc"}>
+                    {trans.affectedPartition}
+                </div>
+
+                <div className={styles.rowElem} style={{display:"flex", justifyContent:"space-evenly", alignItems:"center"}}>
+                    {
+                        !editingTransaction[trans.id] ? 
+                        <button style={{width:"50%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleEdit(trans.id)}}>
+                            Edit
+                        </button>
+                        : 
+                        <div>
+                            <button style={{width:"80%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleSave(trans.id)}}>Save</button>
+                            <button style={{width:"80%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleCancel(trans.id, idx)}}>
+                                Cancel
+                            </button>  
+                        </div>
+                        
+                    }
+
+                    {/* <button style={{width:"50%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleEdit(trans.id)}}>
+                        Edit
+                    </button> */}
+                </div>
+
+                <div className={styles.rowElem + " dcc"} style={{boxSizing:"border-box"}}>
+                    <button style={{width:"50%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleDelete(trans.id)}}>Del</button>
+                </div>
+              
             </div>
         )
         
@@ -277,11 +503,15 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
                         })}
                     </select>
                 </div>
+                <div className={styles.rowElem + " dcc "}>
+                </div>
 
                 <div className={styles.rowElem + " dcc "}>
-                    <button className={styles.createNewPartition} onClick={(ddd)=>{
+                    <button className={`${styles.createNewPartition} dcc`}
+                        style={{width:"80%", height:"50%"}} 
+                        onClick={(ddd)=>{
                         setNewTransaction(newTransaction.filter((_, index) => idx !== index));
-                    }}>deleteRow
+                    }}>Del(New)
                     </button>
                 </div>
             </div>

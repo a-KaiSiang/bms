@@ -36,6 +36,7 @@ async function getTransaction(month, year){
         return data;
     }catch(error){
         console.error('Error occurred : ', error);
+        return;
     }
 }
 
@@ -119,7 +120,7 @@ async function getIncomePartition(date){
 }
 
 async function addNewTransaction(newTransactions){
-    console.log(newTransactions);
+    // console.log(newTransactions);
     try {
         const url = `${serverUrl}/main/insertNewTransaction`
         const bodyData = {
@@ -149,9 +150,61 @@ async function addNewTransaction(newTransactions){
     }
 }
 
+async function modifyTransaction(modifiedTransaction){
+    try {
+        const url=`${serverUrl}/main/modifyTransaction`
+        const reqConfig = {
+            method: "PUT", 
+            headers: {
+                "Content-type" : "application/json"
+            },
+            body: JSON.stringify(modifiedTransaction)
+        }
+
+        const response = await fetch(url, reqConfig);
+        if(!response.ok){
+            const errorData = await response.json();
+            throw errorData;
+        }
+        
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.error(error)
+        return error.errMessage;
+    }
+}
+
+async function deleteTransaction(transactionId){
+    try {
+        const url = `${serverUrl}/main/deleteTransaction/${transactionId}`
+        const reqConfig = {
+            method: "DELETE", 
+            headers: {
+                "Content-type" : "application/json"
+            },
+        }
+
+        const response = await fetch(url, reqConfig);
+        if(!response.ok){
+            const errorData = await response.json();
+            throw errorData;
+        }
+        
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.error(error)
+        return error.errMessage;
+    }
+}
+
 exports.IncomePartitionDataSample = IncomePartitionDataSample;
 exports.getTransaction = getTransaction;
 exports.getIncome = getIncome;
 exports.createNewIncomePartition = createNewIncomePartition;
 exports.getIncomePartition = getIncomePartition;
 exports.addNewTransaction = addNewTransaction;
+exports.modifyTransaction = modifyTransaction;
