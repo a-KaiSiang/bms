@@ -6,7 +6,13 @@ function getDateString(dateString){
     }
 
     const dateObj = new Date(dateString);
-    const formattedDate = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}`;
+    
+    const month = (dateObj.getMonth() + 1).toString();
+    const day = (dateObj.getDate()).toString();
+
+    const formattedMonth = month.length < 2 ? `0${month}` : month;
+    const formattedDay = day.length < 2 ? `${day}` : day;
+    const formattedDate = `${dateObj.getFullYear()}-${formattedMonth}-${formattedDay}`;
     return formattedDate;
 }
 

@@ -61,13 +61,14 @@ async function insertNewIncomePartition(date, partitionRow){
 async function queryIncomePartition(date){
     let connection;
     try {
+        console.log(date);
         connection = await pool.getConnection();
         
         const query = "SELECT partitionName FROM incomepartition WHERE createdDate = ?"
         
         const [results] = await connection.query(query, [date]);
 
-        // console.log(results);
+        console.log(results);
         return results;
     } catch (error) {
         console.error(error);
@@ -84,6 +85,7 @@ async function addNewTransaction(newTransaction){
     let connection;
     try {
         connection = await pool.getConnection();
+        await connection.beginTransaction();
 
         const query = `INSERT INTO transactions(createdDate, particular, amount, affectedPartition) VALUES ?`;
         const values = await Promise.all(newTransaction.map(async (transactionRow) => {
@@ -111,6 +113,61 @@ async function addNewTransaction(newTransaction){
     }
 }
 
+async function queryTransaction(transactionId){
+    let connection; 
+
+    try {
+        connection = await pool.getConnection();
+
+        const query = 'SELECT COUNT(id) FROM transactions WHERE id = ?';
+        
+        const [result] = await connection.query(query, [transactionId]);
+        console.log(result[0][`COUNT(id)`]);
+        if(result[0][`COUNT(id)`] !== 1){
+            throw new Error('Unexpected error happens when querying transaction. Please contact admin now.');
+        }
+
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
+async function modifyTransaction({id, createdDate, particular, amount, affectedPartition}){
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const updateQuery = 'UPDATE transactions SET createdDate = ?, particular = ?, amount = ?, affectedPartition = ? WHERE id = ?';
+        const data = [createdDate, particular, amount, affectedPartition, id];
+
+        const [result] = await connection.query(updateQuery, data);
+        
+        await connection.commit();     
+        return result;   
+    } catch (error) {
+        //When error thrown, log out and return the error.
+        if(connection){
+            await connection.rollback();
+        }
+        throw error;
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
 exports.insertNewIncomePartition = insertNewIncomePartition;
 exports.queryIncomePartition = queryIncomePartition;
 exports.addNewTransaction = addNewTransaction;
+exports.queryTransaction = queryTransaction;
+exports.modifyTransaction = modifyTransaction;
