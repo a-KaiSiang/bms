@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import DatePicker from "react-datepicker"
-import { getTransaction, getIncomePartition, addNewTransaction, modifyTransaction } from "../Api";
+import { getTransaction, getIncomePartition, addNewTransaction, modifyTransaction, deleteTransaction } from "../Api";
 
 import styles from "../css/Transaction.module.css"
 import "react-datepicker/dist/react-datepicker.css";
@@ -232,7 +232,8 @@ function TransactionRow({currentTransaction, incomePartition}) {
         try {
             //validate.
             const savingData = bufferForEditingTran.filter(bufferRow => bufferRow.id === transactionId);
-            // console.log(savingData[0]);
+            console.log(savingData);
+            // return
 
             //id must be unique.
             if(savingData.length !== 1){
@@ -295,11 +296,26 @@ function TransactionRow({currentTransaction, incomePartition}) {
         }
     }
 
-    function handleDelete(transactionId){
-        //get id of deleting row.
+    async function handleDelete(transactionId){
+        //get id of deleting row and check if id is number.
+        try{
+            if(window.confirm('Are you sure to delete this transaction? Delete is not revertable.')){
+                if(isNaN(transactionId)){
+                    throw new Error('Invalid transaction id');
+                }
+    
+                const queryResult = await deleteTransaction(transactionId);
+                console.log(queryResult);
+                alert(queryResult);
+            }else{
+                alert('Delete cancel...');
+            }
+        }catch(error){
+            console.error(error);
+            alert(error);
+        }
 
-        //validate.
-
+        
         //send request to database.
     }
 
@@ -326,6 +342,7 @@ function TransactionRow({currentTransaction, incomePartition}) {
                                 editedData[idx].particular = editedParticular;
                                 setBufferForEditingTran(editedData);
                             }}
+                            maxLength={20}
                         /> : 
                         <div>
                             {trans.particular}
@@ -334,15 +351,73 @@ function TransactionRow({currentTransaction, incomePartition}) {
                 </div>
 
                 <div className={styles.rowElem + " dcc"}>
-                    {(trans.debit)}
+                    {
+                        editingTransaction[trans.id] ? 
+                        <input 
+                            className={styles.inputElem}
+                            value={trans.debit}
+                            onChange={(e) => {
+                                if(/^\d*\.?\d*$/.test(e.target.value) || e.target.value === ""){
+                                    const editedDebit = e.target.value;
+                                    const editedData = JSON.parse(JSON.stringify(bufferForEditingTran));
+                                    editedData[idx].debit = editedDebit;
+                                    setBufferForEditingTran(editedData);
+                                }
+                            }}
+                            maxLength={10}
+                        /> : 
+                        <div>
+                            {trans.debit}
+                        </div>
+                    }
                 </div>
 
                 <div className={styles.rowElem + " dcc"}>
-                    {(trans.credit)}
+                    {
+                        editingTransaction[trans.id] ? 
+                        <input 
+                            className={styles.inputElem}
+                            value={trans.credit}
+                            onChange={(e)=>{
+                                if(/^\d*\.?\d*$/.test(e.target.value) || e.target.value === ""){
+                                    const editedCredit = e.target.value;
+                                    const editedData = JSON.parse(JSON.stringify(bufferForEditingTran));
+                                    editedData[idx].credit = editedCredit;
+                                    setBufferForEditingTran(editedData);
+                                }
+                            }}
+                            maxLength={10}
+                        /> : 
+                        <div>{trans.credit}</div>
+                    // (trans.credit)
+                    }
                 </div>
 
                 <div className={styles.rowElem + " dcc"}>
-                    {trans.affectedPartition}
+                    {
+                    editingTransaction[trans.id] ? 
+                    <select 
+                        className={`${styles.inputElem} dcc`}
+                        value={trans.affectedPartition}
+                        onChange={(e)=>{
+                            const editedIncomePartition = e.target.value;
+                            const editedData = JSON.parse(JSON.stringify(bufferForEditingTran));
+                            editedData[idx].affectedPartition = editedIncomePartition
+                            setBufferForEditingTran(editedData);
+                        }}
+                    >
+                        {incomePartition.map((partitionName, idx) => {
+                            return (
+                                <option key={idx} value={partitionName}>
+                                    {partitionName}
+                                </option>
+                            )
+                        })}
+                    </select>
+                    :
+                    <div>{trans.affectedPartition}</div>
+                    // trans.affectedPartition
+                    }
                 </div>
 
                 <div className={styles.rowElem} style={{display:"flex", justifyContent:"space-evenly", alignItems:"center"}}>
@@ -360,10 +435,6 @@ function TransactionRow({currentTransaction, incomePartition}) {
                         </div>
                         
                     }
-
-                    {/* <button style={{width:"50%", height:"50%"}} className={`${styles.createNewPartition} dcc`} onClick={()=>{handleEdit(trans.id)}}>
-                        Edit
-                    </button> */}
                 </div>
 
                 <div className={styles.rowElem + " dcc"} style={{boxSizing:"border-box"}}>

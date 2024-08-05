@@ -194,7 +194,8 @@ async function deleteTransaction(transactionId){
         
         const result = await response.json();
         console.log(result);
-        return result;
+        return result.msg;
+
     } catch (error) {
         console.error(error)
         return error.errMessage;
@@ -208,3 +209,4 @@ exports.createNewIncomePartition = createNewIncomePartition;
 exports.getIncomePartition = getIncomePartition;
 exports.addNewTransaction = addNewTransaction;
 exports.modifyTransaction = modifyTransaction;
+exports.deleteTransaction = deleteTransaction;
