@@ -166,8 +166,39 @@ async function modifyTransaction({id, createdDate, particular, amount, affectedP
     }
 }
 
+async function deleteTransaction(tid){
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+
+        const query = "DELETE FROM transactions WHERE id = ? ";
+        const data = [tid];
+
+        await connection.beginTransaction();
+
+        const [result] = await connection.query(query, data);
+        
+        console.log(result);
+
+        await connection.commit();
+        return {msg: "Deletion done."};
+    } catch (error) {
+        if(connection){
+            await connection.rollback();
+        }
+
+        throw error;
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
 exports.insertNewIncomePartition = insertNewIncomePartition;
 exports.queryIncomePartition = queryIncomePartition;
 exports.addNewTransaction = addNewTransaction;
 exports.queryTransaction = queryTransaction;
 exports.modifyTransaction = modifyTransaction;
+exports.deleteTransaction = deleteTransaction;
