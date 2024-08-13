@@ -80,6 +80,52 @@ async function queryIncomePartition(date){
     }
 }
 
+async function getIncomeDetails(year, currentMonth, pass2Month){
+    let connection;
+
+    try{
+        const currentDate = `${year}-${currentMonth.length < 2 ? `0${currentMonth}` : `${currentMonth}`}-01`;
+        const pass2MonthDate = `${year}-${pass2Month.length < 2 ? `0${pass2Month}` : `${pass2Month}`}-01`
+
+        connection = await pool.getConnection();
+
+        //get distributed amount.
+        const queryIncomeDetails = 
+            `SELECT YEAR(createdDate) AS year, MONTH(createdDate) AS month, partitionName, distributedAmount FROM incomepartition `+
+            `WHERE createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') `+
+            `ORDER BY createdDate DESC`;
+        console.log(queryIncomeDetails);
+        const [incomeDetails] = await connection.query(queryIncomeDetails);
+        console.log(incomeDetails);
+
+        //get total expenses and income of each month
+        const queryTotalExpenseAndIncome = 
+            `SELECT ` +
+                `YEAR(createdDate) AS year, ` +
+                `MONTH(createdDate) AS month, ` +
+                `SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS expenses, ` +
+                `SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income FROM transactions ` +
+            `WHERE `+
+            `createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` + 
+            `GROUP BY YEAR(createdDate), MONTH(createdDate) ` +
+            `ORDER BY YEAR(createdDate), MONTH(createdDate) `
+
+        const[totalExpenseAndIncome] = await connection.query(queryTotalExpenseAndIncome);
+        console.log(totalExpenseAndIncome);
+
+        return [];
+
+    }catch(error){
+        console.error(error);
+        throw new Error("Something went wrong when getting income details.");
+
+    }finally{
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
 async function addNewTransaction(newTransaction){
     // console.log(newTransaction);
     let connection;
@@ -196,6 +242,7 @@ async function deleteTransaction(tid){
     }
 }
 
+exports.getIncomeDetails = getIncomeDetails;
 exports.insertNewIncomePartition = insertNewIncomePartition;
 exports.queryIncomePartition = queryIncomePartition;
 exports.addNewTransaction = addNewTransaction;
