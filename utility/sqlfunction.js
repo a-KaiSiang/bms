@@ -89,29 +89,50 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
 
         connection = await pool.getConnection();
 
-        //get distributed amount.
+        // //get distributed amount.
+        // const queryIncomeDetails = 
+        //     `SELECT YEAR(createdDate) AS year, MONTH(createdDate) AS month, partitionName, distributedAmount FROM incomepartition `+
+        //     `WHERE createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') `+
+        //     `ORDER BY createdDate DESC`;
+        // // console.log(queryIncomeDetails);
+        // const [incomeDetails] = await connection.query(queryIncomeDetails);
+        // console.log(incomeDetails);
+
+        // //get total expenses and income of each month
+        // const queryTotalExpenseAndIncome = 
+        //     `SELECT ` +
+        //         `YEAR(createdDate) AS year, ` +
+        //         `MONTH(createdDate) AS month, ` +
+        //         `affectedPartition, ` + 
+        //         `SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS expenses, ` +
+        //         `SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income FROM transactions ` +
+        //     `WHERE `+
+        //     `createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` + 
+        //     `GROUP BY YEAR(createdDate), MONTH(createdDate), affectedPartition ` +
+        //     `ORDER BY YEAR(createdDate), MONTH(createdDate) `
+
+        // const[totalExpenseAndIncome] = await connection.query(queryTotalExpenseAndIncome);
+        // console.log(totalExpenseAndIncome);
+
         const queryIncomeDetails = 
-            `SELECT YEAR(createdDate) AS year, MONTH(createdDate) AS month, partitionName, distributedAmount FROM incomepartition `+
-            `WHERE createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') `+
-            `ORDER BY createdDate DESC`;
-        console.log(queryIncomeDetails);
+            `SELECT ` + 
+                `YEAR(incomepartition.createdDate) AS year, ` +
+                `MONTH(incomepartition.createdDate) AS month, ` + 
+                `incomepartition.partitionName, ` + 
+                `SUM(CASE WHEN transactions.amount < 0 THEN amount ELSE 0 END) AS totalExpenses, ` + 
+                `SUM(CASE WHEN transactions.amount > 0 THEN amount ELSE 0 END) AS totalIncome, ` +
+                `incomepartition.distributedAmount ` +
+            `FROM incomepartition ` +
+            `LEFT JOIN ` + 
+                `transactions ON incomepartition.partitionName = transactions.affectedPartition ` + 
+                `AND transactions.createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` +
+            `GROUP BY `
+                `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate), incomepartition.partitionName, incomepartition.distributedAmount ` +
+            `ORDER BY `
+                `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate) `;
+
         const [incomeDetails] = await connection.query(queryIncomeDetails);
         console.log(incomeDetails);
-
-        //get total expenses and income of each month
-        const queryTotalExpenseAndIncome = 
-            `SELECT ` +
-                `YEAR(createdDate) AS year, ` +
-                `MONTH(createdDate) AS month, ` +
-                `SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS expenses, ` +
-                `SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income FROM transactions ` +
-            `WHERE `+
-            `createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` + 
-            `GROUP BY YEAR(createdDate), MONTH(createdDate) ` +
-            `ORDER BY YEAR(createdDate), MONTH(createdDate) `
-
-        const[totalExpenseAndIncome] = await connection.query(queryTotalExpenseAndIncome);
-        console.log(totalExpenseAndIncome);
 
         return [];
 
