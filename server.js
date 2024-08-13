@@ -31,32 +31,24 @@ app.get('/getTransaction', (req, res)=>{
     });
 });
 
-app.get('/getIncome', (req, res)=>{
-    let month1 = req.query.m;
-    let month2 = month1 - 2;
-    let year = req.query.y;
+// app.get('/getIncome', (req, res)=>{
+//     let month1 = req.query.m;
+//     let month2 = month1 - 2;
+//     let year = req.query.y;
 
-    // console.log(month1);
-    // console.log(month2);
-    let query = `SELECT * FROM incomepartition WHERE createdDate BETWEEN '${year}-${month2}-01' AND LAST_DAY('${year}-${month1}-01 ORDER BY createdDate DESC')`;
+//     // console.log(month1);
+//     // console.log(month2);
+//     let query = `SELECT * FROM incomepartition WHERE createdDate BETWEEN '${year}-${month2}-01' AND LAST_DAY('${year}-${month1}-01 ORDER BY createdDate DESC')`;
 
-    connection.query(query, (err, results) => {
-        if(err){
-            console.error('Error executing query:', err.stack);
-            return res.status(500).json({error:"Query error"});
-        }
+//     connection.query(query, (err, results) => {
+//         if(err){
+//             console.error('Error executing query:', err.stack);
+//             return res.status(500).json({error:"Query error"});
+//         }
 
-        res.json(results);
-    });
-});
-
-app.post('/editTransaction', (req, res)=>{
-
-});
-
-app.post('/editPartition', (req, res)=>{
-
-});
+//         res.json(results);
+//     });
+// });
 
 app.listen(port, ()=>{
     console.log('listening......');
