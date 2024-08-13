@@ -8,17 +8,19 @@ const serverUrl = "http://localhost:3030"
 
 async function getIncome(month, year) {
     try{
-        const response = await fetch(`${serverUrl}/getIncome?m=${month}&y=${year}`);
+        const response = await fetch(`${serverUrl}/main/getIncome?m=${month}&y=${year}`);
 
         if(!response.ok){
-            throw new Error('Error on network. Please try again later.');
+            const errorData = await response.json();
+            throw errorData;
         }
 
         const data = await response.json();
-        // console.log(data);
+        console.log(data);
         return data;
     }catch(error){
         console.error('Error occured : ', error);
+        throw error.errMsg;
     }
 }
 

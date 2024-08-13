@@ -45,28 +45,34 @@ export default function IncomePartition(){
                 </button>  
             </div>
              
-
-            <div style={{margin: "10px 0", width: "100%", height: "75%", maxHeight:"500px",overflowX: "hidden"}}>
-                {showInputComponent && <PartitionCreation selectedDate={selectedDate}/>}
-                {currentIncome && <PartitionDataRow partitionInfo={currentIncome} />}
+            <div style={{width:"100%", height:"70%", display:"flex", justifyContent:"center"}}>
+                <div style={{margin: "10px 0", width: "70%", height: "100%",overflowX: "hidden", border:"3px groove wheat"}}>
+                    {showInputComponent && <PartitionCreation selectedDate={selectedDate}/>}
+                    {(currentIncome)&& <PartitionDataRow currentIncome={currentIncome} />}
+                    {console.log(currentIncome)}
+                </div>
             </div>
+            
         </div>
     )
 }
 
-function PartitionDataRow({partitionInfo}){
-    const incomeRecord = partitionInfo.map(elem => {
+function PartitionDataRow({currentIncome}){
+    if(currentIncome.length === 0){
+        return;
+    }
+
+    const incomeRecord = currentIncome.map(elem => {
         const date = new Date(`${elem.createdDate}`);
 
         const formattedDate = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`
         return(
             <div key={elem.id} className={styles.gridTable} dategroup={formattedDate}>
-                <div className={styles.name}>{elem.partitionName}</div>
-                <div className={styles.distributed}>{elem.distributedAmount}</div>
-                <div className={styles.expenses}>{elem.distributedAmount}</div>
-                <div className={styles.income}>{elem.totalIncome}</div>
-                <div className={styles.balance}>{elem.distributedAmount}</div>
-
+                <div className={styles.name}        >{elem.partitionName}       </div>
+                <div className={styles.distributed} >{elem.distributedAmount}   </div>
+                <div className={styles.expenses}    ></div>
+                <div className={styles.income}      ></div>
+                <div className={styles.balance}     ></div>
             </div>
         )
     });
