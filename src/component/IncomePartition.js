@@ -63,16 +63,17 @@ function PartitionDataRow({currentIncome}){
     }
 
     const incomeRecord = currentIncome.map(elem => {
-        const date = new Date(`${elem.createdDate}`);
+        const date = new Date(`${elem.year}-${elem.month}-01`);
+        const balance = parseFloat(elem.distributedAmount) + parseFloat(elem.totalExpenses) + parseFloat(elem.totalIncome);
 
         const formattedDate = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`
         return(
             <div key={elem.id} className={styles.gridTable} dategroup={formattedDate}>
                 <div className={styles.name}        >{elem.partitionName}       </div>
                 <div className={styles.distributed} >{elem.distributedAmount}   </div>
-                <div className={styles.expenses}    ></div>
-                <div className={styles.income}      ></div>
-                <div className={styles.balance}     ></div>
+                <div className={styles.expenses}    >{((elem.totalExpenses) * -1).toFixed(2)}</div>
+                <div className={styles.income}      >{elem.totalIncome}</div>
+                <div className={styles.balance}     >{balance}</div>
             </div>
         )
     });
