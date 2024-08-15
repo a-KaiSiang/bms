@@ -124,17 +124,20 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
                 `incomepartition.distributedAmount ` +
             `FROM incomepartition ` +
             `LEFT JOIN ` + 
-                `transactions ON incomepartition.partitionName = transactions.affectedPartition ` + 
+                `transactions ON ` +
+                `incomepartition.partitionName = transactions.affectedPartition ` + 
+                `AND YEAR(incomepartition.createdDate) = YEAR(transactions.createdDate) ` +
+                `AND MONTH(incomepartition.createdDate) = MONTH(transactions.createdDate) ` + 
                 `AND transactions.createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` +
-            `GROUP BY `
+            `GROUP BY ` + 
                 `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate), incomepartition.partitionName, incomepartition.distributedAmount ` +
-            `ORDER BY `
+            `ORDER BY ` + 
                 `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate) `;
 
         const [incomeDetails] = await connection.query(queryIncomeDetails);
         console.log(incomeDetails);
 
-        return [];
+        return incomeDetails;
 
     }catch(error){
         console.error(error);
