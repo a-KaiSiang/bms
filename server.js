@@ -31,14 +31,6 @@ app.get('/getTransaction', (req, res)=>{
     });
 });
 
-app.post('/editTransaction', (req, res)=>{
-
-});
-
-app.post('/editPartition', (req, res)=>{
-
-});
-
 app.listen(port, ()=>{
     console.log('listening......');
 })
