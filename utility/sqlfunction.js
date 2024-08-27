@@ -1,6 +1,35 @@
-const { format } = require('mysql2');
 const {pool} = require('../database');
 const getDateString = require('./getDateString');
+
+async function login(username, password){
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+
+        const query = "SELECT username AS u, password AS p, token AS t FROM users WHERE BINARY username = ? LIMIT 1";
+
+        // console.log(username);
+        const [result] = await connection.query(query, [username]);
+        // console.log(result);
+        const {u, p, t} = await result[0];
+        if(p !== password){
+            const errMsg = "Login credentials error";
+            throw errMsg;
+        }
+
+        return {u,t};
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
 
 async function insertNewIncomePartition(date, partitionRow){
 
@@ -150,6 +179,31 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
     }
 }
 
+async function getTransactionData(month, year){
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+
+        const query = `SELECT * FROM transactions WHERE MONTH(createdDate) = ? AND YEAR(createdDate) = ?`;
+
+        const [transactions] = await connection.query(query,[month, year]);
+
+        // console.log(transactions);
+        return transactions;
+        
+    } catch (error) {
+        console.error(error);
+        throw new Error("Something went wrong when getting income details.");
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
+
 async function addNewTransaction(newTransaction){
     // console.log(newTransaction);
     let connection;
@@ -266,9 +320,11 @@ async function deleteTransaction(tid){
     }
 }
 
+exports.login = login;
 exports.getIncomeDetails = getIncomeDetails;
 exports.insertNewIncomePartition = insertNewIncomePartition;
 exports.queryIncomePartition = queryIncomePartition;
+exports.getTransactionData = getTransactionData;
 exports.addNewTransaction = addNewTransaction;
 exports.queryTransaction = queryTransaction;
 exports.modifyTransaction = modifyTransaction;
