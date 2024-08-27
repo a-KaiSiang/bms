@@ -1,40 +1,47 @@
 import React from "react";
 import { Container } from "react-bootstrap";
-import styles from "../css/Page.module.css"
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { clearLoginState } from "../app/userSlice";
 
+import styles from "../css/Page.module.css"
 import IncomePartition from "../component/IncomePartition";
 import Transaction from "../component/Transaction";
-import Login from "../component/Login";
+import { login } from "../Api";
+import Login from "./Login";
 
 export default function Page(){
-    
+    const dispatch = useDispatch();
+    const loginSuccess = useSelector((state)=>state.user.loginSuccess);
+
+    function handleLogout(){
+        dispatch(clearLoginState());
+    }
+
     return(
         <Container fluid className={styles.pageContainer + " dcc"} >
-            <Router>
-                <div className={styles.mainWindow} >
-                    <div className={styles.navigationBar}>
-                        <div className="dcc" style={{width:"100%",height:"18%",background:"wheat",borderBottom: "1px solid black"}}>
-                            <span style={{fontWeight: 650, fontSize:"1.2em"}}>Budget Managament System</span>
-                        </div>
-                        <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
-                        <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>
+            <div className={styles.mainWindow} >
+                <div className={styles.navigationBar}>
+                    <div className="dcc" style={{width:"100%",height:"18%",background:"wheat",borderBottom: "1px solid black"}}>
+                        <span style={{fontWeight: 650, fontSize:"1.2em"}}>Budget Managament System</span>
                     </div>
-
-                    <div className={styles.mainComponent}>
-                        
-                            <Routes>
-                                <Route path="/" element={<IncomePartition/>}/>
-                                <Route path="/IncomePartition" element={<IncomePartition/>}/>
-                                <Route path="/Transaction" element={<Transaction/>}/>
-                            </Routes>
-
-                        
-                    </div>
+                    <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
+                    <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>
+                    <Link to="/" onClick={handleLogout} className={styles.navigationButton + " dcc"}>Log out</Link>
                 </div>
-            </Router>
+
+                <div className={styles.mainComponent}>
+                    <Routes>
+                        <Route path="/" element={<IncomePartition/>}/>
+                        <Route path="/IncomePartition" element={<IncomePartition/>}/>
+                        <Route path="/Transaction" element={<Transaction/>}/>
+                    </Routes>
+                </div>
+            </div>
         </Container>
     )
 }

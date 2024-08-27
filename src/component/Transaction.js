@@ -4,6 +4,7 @@ import { getTransaction, getIncomePartition, addNewTransaction, modifyTransactio
 
 import styles from "../css/Transaction.module.css"
 import "react-datepicker/dist/react-datepicker.css";
+import { current } from "@reduxjs/toolkit";
 
 export default function Transaction(){
     const [transactionDate, setTransactionDate] = useState(new Date());
@@ -15,6 +16,9 @@ export default function Transaction(){
         const getTransactionData = async()=>{
             try{
                 const data = await getTransaction(transactionDate.getMonth()+1, transactionDate.getFullYear());
+                if(data === "undefined"){
+                    return[];
+                }
                 setCurrentTransaction(data);
     
             }catch(error) {
@@ -46,6 +50,9 @@ export default function Transaction(){
     }, [transactionDate.getMonth(), transactionDate.getFullYear()])
 
     function handleClick(){
+        if(incomePartition == []){
+            return;
+        }
         setNewTransaction([...newTransaction, {date:transactionDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
     }
 
@@ -116,7 +123,7 @@ export default function Transaction(){
                 </div>
 
                 <div className={styles.scrollContainer} style={{maxHeight: "300px", overflowY:"scroll", overflowX:"hidden"}}>
-                    <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>
+                    {currentTransaction != [] && <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>}
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} incomePartition={incomePartition}/>
                 </div>
             </div>
@@ -127,9 +134,10 @@ export default function Transaction(){
 
 function TransactionRow({currentTransaction, incomePartition}) {
     function initializeEditState(){
-        if(currentTransaction.length === 0){
-            return;
+        if(currentTransaction == []){
+            return {};
         }
+        console.log(currentTransaction);
         return ( 
             currentTransaction.reduce((initializedRow, transRow) => {
                 return {
@@ -140,7 +148,6 @@ function TransactionRow({currentTransaction, incomePartition}) {
         )
     }
 
-    console.log(currentTransaction);
     const [bufferForEditingTran, setBufferForEditingTran] = useState([]);
     const [editingTransaction, setEditingTransaction] = useState(initializeEditState());
     

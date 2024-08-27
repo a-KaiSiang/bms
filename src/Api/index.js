@@ -6,7 +6,63 @@ const IncomePartitionDataSample = [
 
 const serverUrl = "http://localhost:3030"
 
-async function getIncome(month, year) {
+export async function getPubKey(){
+    try {
+        const reqUrl = `${serverUrl}/public/getPubKey`;
+        const reqConfig = {
+            method: "GET",
+            headers: {
+                Authorization : "asjkgasdyucvqw98x7a97egqi2wx",
+                "Content-type" : "text/html"
+            }
+        }
+    
+        const res = await fetch(reqUrl, reqConfig);
+        if(!res.ok){
+            const errorMsg = await res.json();
+            throw errorMsg.errMsg;
+        }
+
+        const pubKey = await res.json();
+        return pubKey;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function login(username, password){
+    try {
+        const reqUrl = `${serverUrl}/public/login`;
+        const body = {
+            u : username, 
+            p : password
+        }
+        const reqConfig = {
+            method : "POST",
+            headers : {
+                Authorization : "asjkgasdyucvqw98x7a97egqi2wx",
+                "Content-type": "application/json",
+            },
+            body : JSON.stringify(body)
+        }
+
+        const res = await fetch(reqUrl, reqConfig);
+        if(!res.ok){
+            const errorMsg = await res.json();
+            throw errorMsg.errMsg;
+        }
+
+        const userData = await res.json();
+        return userData;
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getIncome(month, year) {
     try{
         const response = await fetch(`${serverUrl}/main/getIncome?m=${month}&y=${year}`);
 
@@ -24,9 +80,9 @@ async function getIncome(month, year) {
     }
 }
 
-async function getTransaction(month, year){
+export async function getTransaction(month, year){
     try{
-        const response = await fetch(`${serverUrl}/getTransaction?m=${month}&y=${year}`);
+        const response = await fetch(`${serverUrl}/main/getTransaction?m=${month}&y=${year}`);
 
         if(!response.ok){
             throw new Error('Error on network. Please try again later.')
@@ -42,7 +98,7 @@ async function getTransaction(month, year){
     }
 }
 
-async function createNewIncomePartition(date, incomePartition){
+export async function createNewIncomePartition(date, incomePartition){
     try{
         if(!(date instanceof Date)){
             throw new Error('Wrong date format.');
@@ -87,7 +143,7 @@ async function createNewIncomePartition(date, incomePartition){
     }
 }
 
-async function getIncomePartition(date){
+export async function getIncomePartition(date){
     if(typeof(date) !== "object"){
         throw new Error("Date format error.");
     }
@@ -121,7 +177,7 @@ async function getIncomePartition(date){
     }
 }
 
-async function addNewTransaction(newTransactions){
+export async function addNewTransaction(newTransactions){
     // console.log(newTransactions);
     try {
         const url = `${serverUrl}/main/insertNewTransaction`
@@ -152,7 +208,7 @@ async function addNewTransaction(newTransactions){
     }
 }
 
-async function modifyTransaction(modifiedTransaction){
+export async function modifyTransaction(modifiedTransaction){
     try {
         const url=`${serverUrl}/main/modifyTransaction`
         const reqConfig = {
@@ -178,7 +234,7 @@ async function modifyTransaction(modifiedTransaction){
     }
 }
 
-async function deleteTransaction(transactionId){
+export async function deleteTransaction(transactionId){
     try {
         const url = `${serverUrl}/main/deleteTransaction/${transactionId}`
         const reqConfig = {
@@ -204,11 +260,10 @@ async function deleteTransaction(transactionId){
     }
 }
 
-exports.IncomePartitionDataSample = IncomePartitionDataSample;
-exports.getTransaction = getTransaction;
-exports.getIncome = getIncome;
-exports.createNewIncomePartition = createNewIncomePartition;
-exports.getIncomePartition = getIncomePartition;
-exports.addNewTransaction = addNewTransaction;
-exports.modifyTransaction = modifyTransaction;
-exports.deleteTransaction = deleteTransaction;
+// exports.getIncome = getIncome;
+// exports.createNewIncomePartition = createNewIncomePartition;
+// exports.getIncomePartition = getIncomePartition;
+// exports.getTransaction = getTransaction;
+// exports.addNewTransaction = addNewTransaction;
+// exports.modifyTransaction = modifyTransaction;
+// exports.deleteTransaction = deleteTransaction;
