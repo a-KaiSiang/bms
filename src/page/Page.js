@@ -5,21 +5,21 @@ import { Routes, Route } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
 import { clearLoginState } from "../app/userSlice";
 
 import styles from "../css/Page.module.css"
 import IncomePartition from "../component/IncomePartition";
 import Transaction from "../component/Transaction";
-import { login } from "../Api";
-import Login from "./Login";
 
-export default function Page(){
+export default function Page({loginSession, setLoginSession}){
     const dispatch = useDispatch();
-    const loginSuccess = useSelector((state)=>state.user.loginSuccess);
 
     function handleLogout(){
         dispatch(clearLoginState());
+        sessionStorage.removeItem("loginSuccess");
+        sessionStorage.removeItem("u");
+        sessionStorage.removeItem("t");
+        setLoginSession(false);
     }
 
     return(
