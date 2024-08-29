@@ -37,10 +37,10 @@ export default function Login() {
             if(userData.msg === "Login Success"){
                 const loginAt = Date.now();
                 dispatch(loginSuccess({u:userData.u, t:userData.t}));
-                sessionStorage.setItem("loginSuccess", true);
-                sessionStorage.setItem("u", userData.u);
-                sessionStorage.setItem("t", userData.t);
-                sessionStorage.setItem("ts", loginAt);
+                localStorage.setItem("loginSuccess", true);
+                localStorage.setItem("u", userData.u);
+                localStorage.setItem("t", userData.t);
+                localStorage.setItem("ts", loginAt);
             }
 
         } catch (error) {

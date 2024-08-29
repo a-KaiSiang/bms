@@ -19,7 +19,7 @@ function App() {
 
   useEffect(()=>{
     //check session timespan, clear login session if timespan exceed 30 minutes
-    const loginTimestamp = sessionStorage.getItem('ts');
+    const loginTimestamp = localStorage.getItem('ts');
 
     if(loginTimestamp){
       const currentTime = Date.now();
@@ -28,16 +28,16 @@ function App() {
       if(timeElapsed >= sessionTimeout){
         dispatch(clearLoginState());
         setLoginSession(false);
-        sessionStorage.removeItem("loginSuccess");
-        sessionStorage.removeItem("u");
-        sessionStorage.removeItem("t");
-        sessionStorage.removeItem("ts");
+        localStorage.removeItem("loginSuccess");
+        localStorage.removeItem("u");
+        localStorage.removeItem("t");
+        localStorage.removeItem("ts");
         setLoading(false);
         return;
       }
     }
     //
-    const loginStatus = sessionStorage.getItem("loginSuccess");
+    const loginStatus = localStorage.getItem("loginSuccess");
     if(loginStatus){
       setLoginSession(true);
     }

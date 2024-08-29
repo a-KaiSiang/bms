@@ -16,9 +16,9 @@ export default function Page({loginSession, setLoginSession}){
 
     function handleLogout(){
         dispatch(clearLoginState());
-        sessionStorage.removeItem("loginSuccess");
-        sessionStorage.removeItem("u");
-        sessionStorage.removeItem("t");
+        localStorage.removeItem("loginSuccess");
+        localStorage.removeItem("u");
+        localStorage.removeItem("t");
         setLoginSession(false);
     }
 
