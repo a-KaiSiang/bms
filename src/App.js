@@ -14,8 +14,8 @@ function App() {
   const dispatch = useDispatch();
   const [loginSession, setLoginSession] = useState(false);
   const [loading, setLoading] = useState(true); // New loading state
-  // const sessionTimeout = 18000000;
-  const sessionTimeout = 300000;
+  const sessionTimeout = 18000000;
+  // const sessionTimeout = 300000;
 
   useEffect(()=>{
     //check session timespan, clear login session if timespan exceed 30 minutes
