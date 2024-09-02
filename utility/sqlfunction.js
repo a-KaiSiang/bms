@@ -31,6 +31,41 @@ async function login(username, password){
     }
 }
 
+async function verifyUserToken(username,token){
+    let connection; 
+
+    try {
+        connection = await pool.getConnection();
+
+        const query = "SELECT id, token AS uToken FROM users WHERE BINARY username = ?";
+
+        const [userToken] = await connection.query(query, [username]);
+
+        if(userToken.length === 0){
+            return false;
+        }
+        
+        const uToken = userToken[0].uToken;
+        if(uToken !== token){
+            return false;
+        }
+        const uid = userToken[0].id
+
+        return uid;
+
+    } catch (error) {
+        console.log(error);
+        throw {errMsg : "Something went wrong when querying income data."}
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
+verifyUserToken();
+
 async function insertNewIncomePartition(date, partitionRow){
 
     let connection;
@@ -56,11 +91,11 @@ async function insertNewIncomePartition(date, partitionRow){
         await connection.beginTransaction();
 
         //Initialize query and prepared statement.
-        const query = 'INSERT INTO incomepartition(partitionName, createdDate, totalExpenses, totalIncome, distributedAmount) VALUES ?';
+        const query = 'INSERT INTO incomepartition(userId, partitionName, createdDate, distributedAmount) VALUES ?';
         
         const values = partitionRow.map(elem => {
             const distributed = parseFloat(elem.distributed).toFixed(2);
-            return [`${elem.name}`, `${formattedDate}`, null, null, distributed];
+            return [`${elem.name}`, `${formattedDate}`, distributed];
         });
 
         //Execute insertion.
@@ -87,15 +122,15 @@ async function insertNewIncomePartition(date, partitionRow){
     }
 }
 
-async function queryIncomePartition(date){
+async function queryIncomePartition(date, userId){
     let connection;
     try {
         console.log(date);
         connection = await pool.getConnection();
         
-        const query = "SELECT partitionName FROM incomepartition WHERE createdDate = ?"
+        const query = "SELECT partitionName FROM incomepartition WHERE createdDate = ? AND userId = ?"
         
-        const [results] = await connection.query(query, [date]);
+        const [results] = await connection.query(query, [date, userId]);
 
         console.log(results);
         return results;
@@ -109,7 +144,7 @@ async function queryIncomePartition(date){
     }
 }
 
-async function getIncomeDetails(year, currentMonth, pass2Month){
+async function getIncomeDetails(year, currentMonth, pass2Month, uid){
     let connection;
 
     try{
@@ -117,31 +152,6 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
         const pass2MonthDate = `${year}-${pass2Month.length < 2 ? `0${pass2Month}` : `${pass2Month}`}-01`
 
         connection = await pool.getConnection();
-
-        // //get distributed amount.
-        // const queryIncomeDetails = 
-        //     `SELECT YEAR(createdDate) AS year, MONTH(createdDate) AS month, partitionName, distributedAmount FROM incomepartition `+
-        //     `WHERE createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') `+
-        //     `ORDER BY createdDate DESC`;
-        // // console.log(queryIncomeDetails);
-        // const [incomeDetails] = await connection.query(queryIncomeDetails);
-        // console.log(incomeDetails);
-
-        // //get total expenses and income of each month
-        // const queryTotalExpenseAndIncome = 
-        //     `SELECT ` +
-        //         `YEAR(createdDate) AS year, ` +
-        //         `MONTH(createdDate) AS month, ` +
-        //         `affectedPartition, ` + 
-        //         `SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS expenses, ` +
-        //         `SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income FROM transactions ` +
-        //     `WHERE `+
-        //     `createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` + 
-        //     `GROUP BY YEAR(createdDate), MONTH(createdDate), affectedPartition ` +
-        //     `ORDER BY YEAR(createdDate), MONTH(createdDate) `
-
-        // const[totalExpenseAndIncome] = await connection.query(queryTotalExpenseAndIncome);
-        // console.log(totalExpenseAndIncome);
 
         const queryIncomeDetails = 
             `SELECT ` + 
@@ -158,6 +168,8 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
                 `AND YEAR(incomepartition.createdDate) = YEAR(transactions.createdDate) ` +
                 `AND MONTH(incomepartition.createdDate) = MONTH(transactions.createdDate) ` + 
                 `AND transactions.createdDate BETWEEN '${pass2MonthDate}' AND LAST_DAY('${currentDate}') ` +
+            `WHERE ` + 
+                `incomepartition.userId = ${uid} ` + 
             `GROUP BY ` + 
                 `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate), incomepartition.partitionName, incomepartition.distributedAmount ` +
             `ORDER BY ` + 
@@ -179,13 +191,13 @@ async function getIncomeDetails(year, currentMonth, pass2Month){
     }
 }
 
-async function getTransactionData(month, year){
+async function getTransactionData(month, year, userId){
     let connection;
 
     try {
         connection = await pool.getConnection();
 
-        const query = `SELECT * FROM transactions WHERE MONTH(createdDate) = ? AND YEAR(createdDate) = ?`;
+        const query = `SELECT * FROM transactions WHERE MONTH(createdDate) = ? AND YEAR(createdDate) = ? AND userId = ${userId}`;
 
         const [transactions] = await connection.query(query,[month, year]);
 
@@ -211,13 +223,13 @@ async function addNewTransaction(newTransaction){
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        const query = `INSERT INTO transactions(createdDate, particular, amount, affectedPartition) VALUES ?`;
+        const query = `INSERT INTO transactions(createdDate, userId, particular, amount, affectedPartition) VALUES ?`;
         const values = await Promise.all(newTransaction.map(async (transactionRow) => {
             const dateString = getDateString(transactionRow.date);
             const amount = transactionRow.debit.length === 0 ? transactionRow.credit : `-${transactionRow.debit}`
             console.log(dateString);
             return(
-                [dateString, transactionRow.particular, amount, transactionRow.affectedPartition]
+                [dateString, 1, transactionRow.particular, amount, transactionRow.affectedPartition]
             )
         }));
         // console.log(values);
@@ -321,6 +333,7 @@ async function deleteTransaction(tid){
 }
 
 exports.login = login;
+exports.verifyUserToken = verifyUserToken;
 exports.getIncomeDetails = getIncomeDetails;
 exports.insertNewIncomePartition = insertNewIncomePartition;
 exports.queryIncomePartition = queryIncomePartition;
