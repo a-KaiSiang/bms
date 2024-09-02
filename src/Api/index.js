@@ -64,7 +64,19 @@ export async function login(username, password){
 
 export async function getIncome(month, year) {
     try{
-        const response = await fetch(`${serverUrl}/main/getIncome?m=${month}&y=${year}`);
+        const username = localStorage.getItem("u");
+        console.log(username);
+        const userToken = localStorage.getItem("t");
+
+        const reqUrl = `${serverUrl}/main/getIncome?u=${username}&t=${userToken}&m=${month}&y=${year}`;
+        const reqConfig = {
+            method: "GET",
+            headers : {
+                Accept : "application/json"
+            }
+        }
+
+        const response = await fetch(reqUrl, reqConfig);
 
         if(!response.ok){
             const errorData = await response.json();
@@ -74,15 +86,22 @@ export async function getIncome(month, year) {
         const data = await response.json();
         console.log(data);
         return data;
-    }catch(error){
+    } catch(error){
         console.error('Error occured : ', error);
         throw error.errMsg;
     }
 }
 
-export async function getTransaction(month, year){
+export async function getTransaction(month, year, username, token){
     try{
-        const response = await fetch(`${serverUrl}/main/getTransaction?m=${month}&y=${year}`);
+        const reqUrl = `${serverUrl}/main/getTransaction?u=${username}&t=${token}&m=${month}&y=${year}`
+        const reqConfig = {
+            method : "GET",
+            headers : {
+                Accept : "application/json"
+            }
+        }
+        const response = await fetch(reqUrl, reqConfig);
 
         if(!response.ok){
             throw new Error('Error on network. Please try again later.')
@@ -143,18 +162,26 @@ export async function createNewIncomePartition(date, incomePartition){
     }
 }
 
-export async function getIncomePartition(date){
+export async function getIncomePartition(date, username, token){
     if(typeof(date) !== "object"){
         throw new Error("Date format error.");
     }
 
     try {
+
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
+        const reqUrl = `${serverUrl}/main/getIncomePartition?u=${username}&t=${token}&m=${month}&y=${year}`
+        const reqConfig = {
+            method : "GET", 
+            headers : {
+                Accept : "application/json"
+            }
+        }
 
         console.log(year);
-        const url = `${serverUrl}/main/getIncomePartition?m=${month}&y=${year}`;
-        const response = await fetch(url);
+        const url = ``;
+        const response = await fetch(reqUrl, reqConfig);
 
         if(!response.ok){
             const errorData = await response.json();

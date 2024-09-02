@@ -36,7 +36,7 @@ function App() {
         return;
       }
     }
-    //
+    
     const loginStatus = localStorage.getItem("loginSuccess");
     if(loginStatus){
       setLoginSession(true);

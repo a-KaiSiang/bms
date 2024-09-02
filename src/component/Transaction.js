@@ -15,7 +15,10 @@ export default function Transaction(){
     useEffect(() => {
         const getTransactionData = async()=>{
             try{
-                const data = await getTransaction(transactionDate.getMonth()+1, transactionDate.getFullYear());
+                const username = localStorage.getItem("u");
+                const token = localStorage.getItem("t");
+
+                const data = await getTransaction(transactionDate.getMonth()+1, transactionDate.getFullYear(), username ,token);
                 if(data === "undefined"){
                     return[];
                 }
@@ -33,8 +36,10 @@ export default function Transaction(){
         const requestIncomePartition = async() => {
             try {
                 console.log('getting income partition');
+                const username = localStorage.getItem("u");
+                const token = localStorage.getItem("t");
 
-                const incomePartitionAsAtDate = await getIncomePartition(transactionDate);
+                const incomePartitionAsAtDate = await getIncomePartition(transactionDate, username, token);
                 // console.log(incomePartitionAsAtDate);
                 const incomePartitionsName = incomePartitionAsAtDate.map(partitionDetail => partitionDetail.partitionName);
                 setIncomePartition(incomePartitionsName);
