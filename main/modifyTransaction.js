@@ -5,14 +5,9 @@ const getDateString = require('../utility/getDateString');
 async function modifyTransactionHandler(req, res){
     try {
         const {id, createdDate, particular, debit, credit, affectedPartition} = req.body;
+        const {uid} = req;
+        console.log(uid);
 
-        console.log(id);
-        console.log(createdDate);
-        console.log(particular);
-        console.log(debit);
-        console.log(credit);
-        console.log(affectedPartition);
-        //validate 
         //transaction should be valid.
         await queryTransaction(id);
 
@@ -48,7 +43,7 @@ async function modifyTransactionHandler(req, res){
         const formattedMonth = transactionMonth.length < 2 ? `0${transactionMonth}` : transactionMonth;
        
         const formattedDate = `${transactionDate.getFullYear()}-${formattedMonth}-01`;
-        const incomePartitionAsAtDate = await queryIncomePartition(formattedDate);
+        const incomePartitionAsAtDate = await queryIncomePartition(formattedDate, uid);
         if(incomePartitionAsAtDate.filter(partition => partition.partitionName === affectedPartition).length !== 1){
             throw new Error('Invalid income partition');
         }
@@ -58,7 +53,8 @@ async function modifyTransactionHandler(req, res){
             createdDate: getDateString(createdDate), 
             particular: particular, 
             amount : amount,
-            affectedPartition: affectedPartition
+            affectedPartition: affectedPartition,
+            uid: uid
         }
 
         const result = await modifyTransaction(validatedData);

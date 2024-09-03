@@ -216,7 +216,7 @@ async function getTransactionData(month, year, userId){
 }
 
 
-async function addNewTransaction(newTransaction){
+async function addNewTransaction(newTransaction, uid){
     // console.log(newTransaction);
     let connection;
     try {
@@ -229,7 +229,7 @@ async function addNewTransaction(newTransaction){
             const amount = transactionRow.debit.length === 0 ? transactionRow.credit : `-${transactionRow.debit}`
             console.log(dateString);
             return(
-                [dateString, 1, transactionRow.particular, amount, transactionRow.affectedPartition]
+                [dateString, uid, transactionRow.particular, amount, transactionRow.affectedPartition]
             )
         }));
         // console.log(values);
@@ -274,16 +274,16 @@ async function queryTransaction(transactionId){
     }
 }
 
-async function modifyTransaction({id, createdDate, particular, amount, affectedPartition}){
+async function modifyTransaction({id, createdDate, particular, amount, affectedPartition, uid}){
     let connection;
 
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        const updateQuery = 'UPDATE transactions SET createdDate = ?, particular = ?, amount = ?, affectedPartition = ? WHERE id = ?';
-        const data = [createdDate, particular, amount, affectedPartition, id];
-
+        const updateQuery = 'UPDATE transactions SET createdDate = ?, particular = ?, amount = ?, affectedPartition = ? WHERE id = ? AND userId = ? ';
+        const data = [createdDate, particular, amount, affectedPartition, id, uid];
+        
         const [result] = await connection.query(updateQuery, data);
         
         await connection.commit();     

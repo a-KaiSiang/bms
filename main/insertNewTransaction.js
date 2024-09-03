@@ -2,17 +2,19 @@ const validateDate = require('../utility/validateDate');
 const {queryIncomePartition, addNewTransaction} = require('../utility/sqlfunction');
 
 async function insertNewTransactionHandler(req, res){
-    const {t} = req.body;
+    const {transaction} = req.body;
+    const {uid} = req;
 
+    console.log(req);
     try {
         //Promise.all will collect all promises provided into an array. When all promise in the array are resolved, Promise.all will be resolved as well.
         //Promise.all to collect all promise created by map() for validation.
-        const failcase = await Promise.all(t.map(async (newTransactionRow) => {
+        const failcase = await Promise.all(transaction.map(async (newTransactionRow) => {
             //setup for performing validation.
             const date = new Date(newTransactionRow.date);
             const formattedYearMonth = `${date.getFullYear()}-${date.getMonth() + 1}`;
             //query will return an array with objects, instead of plain text.
-            const query_allIncomePartitionForMonth = await queryIncomePartition(`${formattedYearMonth}-01`);
+            const query_allIncomePartitionForMonth = await queryIncomePartition(`${formattedYearMonth}-01`, uid);
             const allIncomePartitionName = query_allIncomePartitionForMonth.map(elem => elem.partitionName);
             
             //check whether newTransactionRow contains invalid data.
@@ -47,7 +49,7 @@ async function insertNewTransactionHandler(req, res){
 
         console.log('validation passed');
         // const results = await addNewTransaction(t);
-        await addNewTransaction(t);
+        await addNewTransaction(transaction, uid);
         
         res.status(200).json({msg:"Transactions added successfully"});
     } catch (error) {
