@@ -204,12 +204,14 @@ export async function getIncomePartition(date, username, token){
     }
 }
 
-export async function addNewTransaction(newTransactions){
+export async function addNewTransaction(newTransactions, username, token){
     // console.log(newTransactions);
     try {
         const url = `${serverUrl}/main/insertNewTransaction`
         const bodyData = {
-            t: newTransactions
+            transaction: newTransactions,
+            u: username, 
+            t: token
         }
         const reqConfig = {
             method: "POST", 
@@ -235,15 +237,21 @@ export async function addNewTransaction(newTransactions){
     }
 }
 
-export async function modifyTransaction(modifiedTransaction){
+export async function modifyTransaction(modifiedTransaction, username, token){
     try {
+        const userInfo = {
+            u : username, 
+            t : token
+        }
+        console.log(userInfo);
+
         const url=`${serverUrl}/main/modifyTransaction`
         const reqConfig = {
             method: "PUT", 
             headers: {
                 "Content-type" : "application/json"
             },
-            body: JSON.stringify(modifiedTransaction)
+            body: JSON.stringify({...modifiedTransaction, ...userInfo})
         }
 
         const response = await fetch(url, reqConfig);

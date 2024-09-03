@@ -64,6 +64,9 @@ export default function Transaction(){
     async function handleSubmit(){
         console.log(newTransaction);
         try {
+            const username = localStorage.getItem("u");
+            const token = localStorage.getItem("t");
+
             //check if newTransaction is filled with data.
             if(newTransaction.length === 0){
                 throw "New transaction has not set yet.Don't be stupid";
@@ -84,7 +87,7 @@ export default function Transaction(){
                 throw "Input error. Please check your new transaction.";
             }
 
-            const result = await addNewTransaction(newTransaction);
+            const result = await addNewTransaction(newTransaction, username, token);
             
             alert(result.msg);
         } catch (error) {
@@ -295,7 +298,9 @@ function TransactionRow({currentTransaction, incomePartition}) {
             }
 
             //send to database.
-            const result = await modifyTransaction(savingData[0]);
+            const username = localStorage.getItem("u");
+            const token = localStorage.getItem("t");
+            const result = await modifyTransaction(savingData[0], username, token);
 
             if(result.msg){
                 alert(result.msg);
