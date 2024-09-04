@@ -10,6 +10,7 @@ import { clearLoginState } from "../app/userSlice";
 import styles from "../css/Page.module.css"
 import IncomePartition from "../component/IncomePartition";
 import Transaction from "../component/Transaction";
+import CreateUser from "../component/CreateUser";
 
 export default function Page({loginSession, setLoginSession}){
     const dispatch = useDispatch();
@@ -31,6 +32,7 @@ export default function Page({loginSession, setLoginSession}){
                     </div>
                     <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
                     <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>
+                    <Link to="CreateUser" className={styles.navigationButton + " dcc"}>Create User</Link>
                     <Link to="/" onClick={handleLogout} className={styles.navigationButton + " dcc"}>Log out</Link>
                 </div>
 
@@ -39,6 +41,7 @@ export default function Page({loginSession, setLoginSession}){
                         <Route path="/" element={<IncomePartition/>}/>
                         <Route path="/IncomePartition" element={<IncomePartition/>}/>
                         <Route path="/Transaction" element={<Transaction/>}/>
+                        <Route path="/CreateUser" element={<CreateUser />}/>
                     </Routes>
                 </div>
             </div>

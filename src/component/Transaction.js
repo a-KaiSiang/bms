@@ -554,7 +554,7 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
                         value={elem.debit}
                         maxLength={10}
                         onChange={(e)=>{
-                            if(/^\d+(\.\d{1,2})?$/.test(e.target.value) || e.target.value === ""){
+                            if(/^\d*\.?\d{0,2}$/.test(e.target.value) || e.target.value === ""){
                                 const newTrans = [...newTransaction];
                                 newTrans[idx].debit = e.target.value;
                                 setNewTransaction(newTrans);
@@ -570,7 +570,7 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
                         value={elem.credit}
                         maxLength={10}
                         onChange={(e)=>{
-                            if(/^\d+(\.\d{1,2})?$/.test(e.target.value) || e.target.value === ""){
+                            if(/^\d*\.?\d{0,2}$/.test(e.target.value) || e.target.value === ""){
                                 const newTrans = [...newTransaction];
                                 newTrans[idx].credit = e.target.value;
                                 setNewTransaction(newTrans);

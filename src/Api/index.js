@@ -117,7 +117,7 @@ export async function getTransaction(month, year, username, token){
     }
 }
 
-export async function createNewIncomePartition(date, incomePartition){
+export async function createNewIncomePartition(date, incomePartition, username, token){
     try{
         if(!(date instanceof Date)){
             throw new Error('Wrong date format.');
@@ -135,6 +135,8 @@ export async function createNewIncomePartition(date, incomePartition){
                 m: createdMonth, 
                 y: createdYear
             },
+            u: username, 
+            t: token,
             ... incomePartition
         }
 

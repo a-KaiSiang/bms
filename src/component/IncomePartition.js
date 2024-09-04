@@ -46,10 +46,9 @@ export default function IncomePartition(){
             </div>
              
             <div style={{width:"100%", height:"70%", display:"flex", justifyContent:"center"}}>
-                <div style={{margin: "10px 0", width: "70%", height: "100%",overflowX: "hidden", border:"3px groove wheat"}}>
+                <div style={{margin: "10px 0", width: "100%", height: "100%",overflowX: "hidden", border:"3px groove wheat"}}>
                     {showInputComponent && <PartitionCreation selectedDate={selectedDate}/>}
                     {(currentIncome)&& <PartitionDataRow currentIncome={currentIncome} />}
-                    {console.log(currentIncome)}
                 </div>
             </div>
             
@@ -73,7 +72,7 @@ function PartitionDataRow({currentIncome}){
                 <div className={styles.distributed} >{elem.distributedAmount}   </div>
                 <div className={styles.expenses}    >{((elem.totalExpenses) * -1).toFixed(2)}</div>
                 <div className={styles.income}      >{elem.totalIncome}</div>
-                <div className={styles.balance}     >{balance}</div>
+                <div className={styles.balance}     >{balance.toFixed(2)}</div>
             </div>
         )
     });
@@ -141,6 +140,8 @@ function PartitionCreation({selectedDate}){
 
     async function handleSubmit(){
         try {
+            const username = localStorage.getItem("u");
+            const token = localStorage.getItem("t");
             // Validate name. (length should greater than 2)
             const failCase_AllPartitionName = partitionRow.filter(elem => elem.name === '');
             // Validate distributed amount. (should be able to parse to float)
@@ -157,7 +158,7 @@ function PartitionCreation({selectedDate}){
             const totalOfDistributed = partitionRow.reduce((total, current)=>(total + parseFloat(current.distributed)), 0);
 
             // call API to fetch request to /addIncomeTransaction.
-            await createNewIncomePartition(selectedDate, {partitionRow: partitionRow});
+            await createNewIncomePartition(selectedDate, {partitionRow: partitionRow}, username, token);
         } catch (error) {
             console.error(error);
             alert(error);
