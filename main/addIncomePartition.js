@@ -2,6 +2,7 @@ const {insertNewIncomePartition} = require('../utility/sqlfunction')
 
 async function addIncomePartitionHandler(req, res){
     const {date, partitionRow} = req.body;
+    const {uid} = req;
     const dateElem = ['m','y'];
 
     partitionRow.map(elem => console.log(elem));
@@ -47,7 +48,7 @@ async function addIncomePartitionHandler(req, res){
         
         // call to API to insert new income partition data.
         // result object of query will be returned.
-        const resultOfInsert = await insertNewIncomePartition(date, partitionRow);
+        const resultOfInsert = await insertNewIncomePartition(date, partitionRow, uid);
 
         //return message to client to indorm client that partition create successfully.
         res.status(200).json({message: "Insert Success"});

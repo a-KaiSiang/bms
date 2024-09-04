@@ -66,7 +66,7 @@ async function verifyUserToken(username,token){
 
 verifyUserToken();
 
-async function insertNewIncomePartition(date, partitionRow){
+async function insertNewIncomePartition(date, partitionRow, uid){
 
     let connection;
 
@@ -95,7 +95,7 @@ async function insertNewIncomePartition(date, partitionRow){
         
         const values = partitionRow.map(elem => {
             const distributed = parseFloat(elem.distributed).toFixed(2);
-            return [`${elem.name}`, `${formattedDate}`, distributed];
+            return [uid, `${elem.name}`, `${formattedDate}`, distributed];
         });
 
         //Execute insertion.
@@ -173,7 +173,7 @@ async function getIncomeDetails(year, currentMonth, pass2Month, uid){
             `GROUP BY ` + 
                 `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate), incomepartition.partitionName, incomepartition.distributedAmount ` +
             `ORDER BY ` + 
-                `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate) `;
+                `YEAR(incomepartition.createdDate), MONTH(incomepartition.createdDate) DESC `;
 
         const [incomeDetails] = await connection.query(queryIncomeDetails);
         console.log(incomeDetails);

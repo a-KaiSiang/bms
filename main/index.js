@@ -33,7 +33,7 @@ express.get('/getIncomePartition', getIncomePartitionHandler);
 express.get('/getIncome', verifyUser, getIncomeDetailsHandler);
 express.get('/getTransaction', verifyUser, getTransactionHandler);
 
-express.post('/addIncomePartition', addIncomePartitionHandler);
+express.post('/addIncomePartition', verifyUser, addIncomePartitionHandler);
 express.post('/insertNewTransaction', verifyUser, insertNewTransactionHandler);
 
 express.put('/modifyTransaction', verifyUser, modifyTransactionHandler);
