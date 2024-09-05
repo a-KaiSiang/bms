@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import { createUser } from "../Api";
 
 export default function CreateUser(){
     const [username, setUsername] = useState('');
@@ -21,7 +22,19 @@ export default function CreateUser(){
     }
 
     async function handleCreate(){
+        console.log(username, password);
+        try{
+            if(username === '' || password === ''){
+                alert("Please enter username and password");
+                return;
+            }
+            
+            const newUserInsertResult = await createUser(username, password);
+            alert(newUserInsertResult);
 
+        }catch(error){
+            alert(error);
+        }
     }
 
     return(
@@ -71,7 +84,7 @@ export default function CreateUser(){
                     </div>
 
                     <div className="dcc" style={{width:"50%", height:"20%"}}>
-                        <button className="commonBut" onClick={handleCreate}>Create</button>
+                        <button className="commonBut" onClick={()=>(handleCreate())}>Create</button>
                     </div>
                 </div>
 

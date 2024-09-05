@@ -297,6 +297,39 @@ export async function deleteTransaction(transactionId){
     }
 }
 
+export async function createUser(username, password){
+    console.log('skskkssasca7strcaus');
+    try {
+        const reqUrl = `${serverUrl}/admin/createUser`;
+        const bodyData = {
+            an : localStorage.getItem("u"),
+            at : localStorage.getItem("t"),
+            nu : username, 
+            np : password
+        }
+        const reqConfig = {
+            method : "POST",
+            headers : {
+                "Content-type" : "application/json",
+            },
+            body : JSON.stringify(bodyData)
+        }
+        
+        const res = await fetch(reqUrl, reqConfig);
+
+        if(!res.ok){
+            const errorData = await res.json();
+            throw errorData.errMsg;
+        }
+        
+        const insertUser = await res.json();
+        return insertUser.msg;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 // exports.getIncome = getIncome;
 // exports.createNewIncomePartition = createNewIncomePartition;
 // exports.getIncomePartition = getIncomePartition;
