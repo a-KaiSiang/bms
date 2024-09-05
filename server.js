@@ -19,6 +19,7 @@ const options = {
 //handler
 const publicHandler = require('./public');
 const mainHandler = require('./main');
+const adminHandler = require('./admin');
 
 //middleware
 app.use(cors());
@@ -27,6 +28,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.use('/public', publicHandler);
 app.use('/main', mainHandler);
+app.use('/admin', adminHandler);
 
 app.listen(port, ()=>{
     console.log('listening......');

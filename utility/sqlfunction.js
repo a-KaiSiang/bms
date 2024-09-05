@@ -1,5 +1,6 @@
 const {pool} = require('../database');
 const getDateString = require('./getDateString');
+const generateRandomToken = require('./generateRandomToken');
 
 async function login(username, password){
     let connection;
@@ -332,6 +333,78 @@ async function deleteTransaction(tid){
     }
 }
 
+async function verifyAdminToken(username, adminToken){
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+        const query = "SELECT token FROM users WHERE username = ?";
+        const [token] = await connection.query(query, [username]);
+        
+        return (adminToken === token[0].token);
+        
+    } catch (error) {
+        console.error(error);
+        throw new Error("Something went wrong when querying admin token.");
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
+async function checkTokenUnique(token){
+    let connection;
+
+    try{
+        connection = await pool.getConnection();
+        const query = "SELECT token FROM users WHERE token = ?";
+        const [tokenResult] = await connection.query(query, [token]);
+        if(tokenResult.length > 0){
+            return false;
+        }
+        return true;
+    }catch(error){
+        console.error(error);
+        throw false;
+    }
+}
+
+async function createUser(username, password){
+    let connection; 
+    let checkNewToken = false;
+    
+    try {
+        connection = await pool.getConnection();
+        let newToken;
+        while(!checkNewToken){
+            newToken = await generateRandomToken();
+            const isNewTokenUnique = await checkTokenUnique(newToken);
+            if(isNewTokenUnique){
+                checkNewToken = true;
+                break;
+            }
+        }
+
+        await connection.beginTransaction();
+
+        const query = "INSERT INTO users(username, password, token) VALUES (?, ?, ?)";
+        const [createUserResult] = await connection.query(query, [username, password, newToken]);
+        console.log(createUserResult);
+        await connection.commit();
+        return true;
+
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        throw false;
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
 exports.login = login;
 exports.verifyUserToken = verifyUserToken;
 exports.getIncomeDetails = getIncomeDetails;
@@ -342,3 +415,5 @@ exports.addNewTransaction = addNewTransaction;
 exports.queryTransaction = queryTransaction;
 exports.modifyTransaction = modifyTransaction;
 exports.deleteTransaction = deleteTransaction;
+exports.verifyAdminToken = verifyAdminToken;
+exports.createUser = createUser;
