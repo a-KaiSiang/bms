@@ -32,7 +32,7 @@ export default function Page({loginSession, setLoginSession}){
                     </div>
                     <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
                     <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>
-                    <Link to="CreateUser" className={styles.navigationButton + " dcc"}>Create User</Link>
+                    {localStorage.getItem("t") === "8hsA9127asgd" && <Link to="CreateUser" className={styles.navigationButton + " dcc"}>Create User</Link>}
                     <Link to="/" onClick={handleLogout} className={styles.navigationButton + " dcc"}>Log out</Link>
                 </div>
 
