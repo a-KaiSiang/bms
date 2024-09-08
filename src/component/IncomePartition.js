@@ -5,7 +5,7 @@ import { getIncome, createNewIncomePartition } from "../Api";
 import styles from "../css/IncomePartition.module.css"
 
 export default function IncomePartition(){
-    const [showInputComponent, setShowInputComponent] = useState(false);
+    const [showCreateComponent, setShowCreateComponent] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [currentIncome, setCurrentIncome] = useState([]);
 
@@ -26,6 +26,13 @@ export default function IncomePartition(){
         getLast3MonthIncome();
     }, [selectedDate.getMonth(), selectedDate.getFullYear()])
 
+    
+    async function RefreshPage(){
+        setSelectedDate(new Date());
+        setCurrentIncome([]);
+        setShowCreateComponent(false);
+    }
+
     return (
         <div className="partitionContainer">
             <h1 style={{paddingLeft : "20px", margin: "25px 20px", color:"whitesmoke"}}>Income Distribution</h1>
@@ -40,14 +47,14 @@ export default function IncomePartition(){
                     />
                 </div>
 
-                <button className="createNewPartition" onClick={()=>{setShowInputComponent(!showInputComponent)}}>
+                <button className="createNewPartition" onClick={()=>{setShowCreateComponent(!showCreateComponent)}}>
                     Create new Partition
                 </button>  
             </div>
              
             <div style={{width:"100%", height:"70%", display:"flex", justifyContent:"center"}}>
                 <div style={{margin: "10px 0", width: "100%", height: "100%",overflowX: "hidden", border:"3px groove wheat"}}>
-                    {showInputComponent && <PartitionCreation selectedDate={selectedDate}/>}
+                    {showCreateComponent && <PartitionCreation selectedDate={selectedDate} RefreshPage={RefreshPage}/>}
                     {(currentIncome)&& <PartitionDataRow currentIncome={currentIncome} />}
                 </div>
             </div>
@@ -124,7 +131,7 @@ function PartitionHeader({createdDate}){
 }
 
 
-function PartitionCreation({selectedDate}){
+function PartitionCreation({selectedDate, RefreshPage}){
     const [partitionRow, setPartitionRow] = useState([]);
 
     const partitionDataTemplate = {name:"", distributed:"", totalExpenses:"-", totalIncome:"-" ,balance:"-"};
@@ -154,17 +161,22 @@ function PartitionCreation({selectedDate}){
                 alert("Invalid input on distributed amount");
                 return;
             }
-            // validate whether total of distributed is tally with income.
-            const totalOfDistributed = partitionRow.reduce((total, current)=>(total + parseFloat(current.distributed)), 0);
 
             // call API to fetch request to /addIncomeTransaction.
-            await createNewIncomePartition(selectedDate, {partitionRow: partitionRow}, username, token);
+            const resultAddingIPartition = await createNewIncomePartition(selectedDate, {partitionRow: partitionRow}, username, token);
+
+            if(Object.keys(resultAddingIPartition).includes('msg')){
+                alert(resultAddingIPartition.msg);
+                RefreshPage();
+                return;
+            }
         } catch (error) {
             console.error(error);
             alert(error);
             return;
         }
     }
+
 
     return(
         <div style={{margin: "10px 0", width: "100%", display:'flex', flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
