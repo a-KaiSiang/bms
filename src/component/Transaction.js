@@ -12,24 +12,28 @@ export default function Transaction(){
     const [currentTransaction, setCurrentTransaction] = useState([]);
     const [incomePartition, setIncomePartition] = useState([]);
 
-    useEffect(() => {
-        const getTransactionData = async()=>{
-            try{
-                const username = localStorage.getItem("u");
-                const token = localStorage.getItem("t");
+    async function fetchTransaction(){
+        try{
+            const username = localStorage.getItem("u");
+            const token = localStorage.getItem("t");
 
-                const data = await getTransaction(transactionDate.getMonth()+1, transactionDate.getFullYear(), username ,token);
-                if(data === "undefined"){
-                    return[];
-                }
-                setCurrentTransaction(data);
-    
-            }catch(error) {
-                console.error('Error fetching transactions', error);
-    
+            const data = await getTransaction(transactionDate.getMonth()+1, transactionDate.getFullYear(), username ,token);
+            if(!data){
+                return [];
             }
+
+            if(JSON.stringify(data) !== JSON.stringify(currentTransaction)){
+                setCurrentTransaction(data);
+            }
+
+        }catch(error) {
+            console.error('Error fetching transactions', error);
+
         }
-        getTransactionData();
+    }
+
+    useEffect(() => {
+        fetchTransaction();
     }, [transactionDate.getMonth(), transactionDate.getFullYear()])
 
     useEffect(() => {
@@ -54,11 +58,15 @@ export default function Transaction(){
         requestIncomePartition();
     }, [transactionDate.getMonth(), transactionDate.getFullYear()])
 
+    useEffect(()=>{
+        fetchTransaction();
+    }, [currentTransaction])
+
     function handleClick(){
         if(incomePartition == []){
             return;
         }
-        setNewTransaction([...newTransaction, {date:transactionDate, particular:"", debit:"", credit:"", affectedPartition:""}]);
+        setNewTransaction([{date:transactionDate, particular:"", debit:"", credit:"", affectedPartition:""}, ...newTransaction]);
     }
 
     async function handleSubmit(){
@@ -89,12 +97,23 @@ export default function Transaction(){
 
             const result = await addNewTransaction(newTransaction, username, token);
             
-            alert(result.msg);
+            if(Object.keys(result).includes('msg')){
+                RefreshPage();
+                alert(result.msg);
+            }
         } catch (error) {
             console.log(error);
             alert(error);
+            RefreshPage();
             return;
         }
+    }
+
+    async function RefreshPage(){
+        setTransactionDate(new Date());
+        setNewTransaction([]);
+        setCurrentTransaction([]);
+        setIncomePartition([]);
     }
 
     return (
@@ -120,22 +139,13 @@ export default function Transaction(){
             </div>
 
             <div className={`${styles.transactionTable}`}>
-                <div className={styles.transactionHeader}>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Date</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Particular</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Debit</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Credit</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3", textAlign:"center"}}>Affected Partition</div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
-                    <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
-                </div>
-
-                <div className={styles.scrollContainer} style={{maxHeight: "300px", overflowY:"scroll", overflowX:"hidden"}}>
-                    {currentTransaction != [] && <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>}
+                <div className={styles.scrollContainer} style={{ overflowY:"scroll", overflowX:"hidden"}}>
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} incomePartition={incomePartition}/>
+                    {currentTransaction != [] && <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>}
                 </div>
+                {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}} onClick={handleSubmit}>Confirm</button></div>}
             </div>
-            {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}} onClick={handleSubmit}>Confirm</button></div>}
+           
         </div>
     )
 }
@@ -465,6 +475,16 @@ function TransactionRow({currentTransaction, incomePartition}) {
 
     return(
         <div style={{backgroundColor:"aliceblue"}}>
+            {/* <div className={styles.transactionHeader}>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Date</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Particular</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Debit</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Credit</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3", textAlign:"center"}}>Affected Partition</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
+            </div> */}
+
             {data}
         </div>
     )
@@ -498,8 +518,6 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
     },[newTransaction.length]);
 
     function handleAffectedPartChange(e, index){
-        // console.log(incomePartition);
-        // console.log(e.target.value);
         const newPartitionName = e.target.value;
         let newTrans = [...newTransaction];
         newTrans[index].affectedPartition = newPartitionName;
@@ -559,7 +577,6 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
                                 newTrans[idx].debit = e.target.value;
                                 setNewTransaction(newTrans);
                             }
-                            
                         }}
                     />
                 </div>
@@ -608,6 +625,15 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
 
     return(
         <div style={{backgroundColor:"aliceblue"}}>
+            <div className={styles.transactionHeader}>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Date</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Particular</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Debit</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}>Credit</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3", textAlign:"center"}}>Affected Partition</div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
+                <div className={`${styles.headerElem} dcc`} style={{backgroundColor:"#F5DEB3"}}></div>
+            </div>
             {currentNewTrans}
         </div>
     )

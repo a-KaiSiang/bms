@@ -4,11 +4,10 @@
 
 .transactionTable {
     min-height: 200px;
-    width: 80%;
-    /* border: 2px solid black; */
-    /* border-left: 1px solid black; */
+    width: 90%;
+    height: 80%;
     box-sizing: border-box;
-    margin-left: 50px;
+    margin: 0 50px 0 50px;
 }
 
 .transactionHeader, .transactionRow {
@@ -45,21 +44,22 @@
 }
 
 .scrollContainer {
-    max-height: 300px;
+    /* max-height: 300px; */
+    height: 80%;
     overflow-y: scroll;
     position: relative;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
-.scrollContainer::-webkit-scrollbar {
+/* .scrollContainer::-webkit-scrollbar {
     display: none;
-}
+} */
 
 /* Hide scrollbar for IE, Edge and Firefox */
-.scrollContainer {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
+/* .scrollContainer {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;  
+} */
 
 .inputElem {
     background: transparent;
