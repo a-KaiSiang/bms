@@ -11,6 +11,7 @@ import styles from "../css/Page.module.css"
 import IncomePartition from "../component/IncomePartition";
 import Transaction from "../component/Transaction";
 import CreateUser from "../component/CreateUser";
+import EditProfile from "../component/EditProfile";
 
 export default function Page({loginSession, setLoginSession}){
     const dispatch = useDispatch();
@@ -32,7 +33,8 @@ export default function Page({loginSession, setLoginSession}){
                     </div>
                     <Link to="/IncomePartition"  className={styles.navigationButton + " dcc"}>IncomePartition</Link>
                     <Link to="/Transaction"  className={styles.navigationButton + " dcc"}>Transaction</Link>
-                    {localStorage.getItem("t") === "8hsA9127asgd" && <Link to="CreateUser" className={styles.navigationButton + " dcc"}>Create User</Link>}
+                    {localStorage.getItem("t") === "8hsA9127asgd" && <Link to="/CreateUser" className={styles.navigationButton + " dcc"}>Create User</Link>}
+                    <Link to="/UserProfile"  className={styles.navigationButton + " dcc"}>Edit profile</Link>
                     <Link to="/" onClick={handleLogout} className={styles.navigationButton + " dcc"}>Log out</Link>
                 </div>
 
@@ -42,6 +44,7 @@ export default function Page({loginSession, setLoginSession}){
                         <Route path="/IncomePartition" element={<IncomePartition/>}/>
                         <Route path="/Transaction" element={<Transaction/>}/>
                         <Route path="/CreateUser" element={<CreateUser />}/>
+                        <Route path="/UserProfile" element={<EditProfile/>}/>
                     </Routes>
                 </div>
             </div>

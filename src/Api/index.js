@@ -330,6 +330,68 @@ export async function createUser(username, password){
     }
 }
 
+export async function validateUser(enc_credentials){
+    try {
+        const reqUrl = `${serverUrl}/main/verifyUserIdentity`;
+        const bodyData = {
+            d : enc_credentials
+        }
+        const reqConfig = {
+            method : "POST", 
+            headers : {
+                "Content-type" : "application/json",
+            },
+            body : JSON.stringify(bodyData)
+        }
+
+        const response = await fetch(reqUrl, reqConfig);
+        
+        if(!response.ok){
+            const errMessage = await response.json();
+            throw errMessage.errMsg;
+        }
+
+        // Once response is received, return the data and let the page to handle the error.
+        const resultValidateUser = await response.json();
+
+        return resultValidateUser;
+        // console.log(enc_credentials);
+    } catch (error) {
+        // this code is intended to catch only unhandled error.
+        console.error("User validation", error);
+        throw error;
+    }
+}
+
+export async function userEditProfile(enc_updatedProfile){
+    try {
+        const reqUrl = `${serverUrl}/main/userEditProfile`;
+        console.log(enc_updatedProfile);
+        const updatedUserProfile = {
+            dd : enc_updatedProfile
+        };
+        const reqConfig = {
+            method : "POST",
+            headers : {
+                "Content-type" : "application/json"
+            },
+            body : JSON.stringify(updatedUserProfile),
+        };
+
+        const response = await fetch(reqUrl, reqConfig);
+        if(!response.ok){
+            const errMessage = await response.json();
+            throw errMessage.errMsg;
+        }
+
+        const resultEditProfile = await response.json();
+        return resultEditProfile;
+        
+    } catch (error) {
+        console.error('Profile edition fail', error);
+        throw error;
+    }
+}
 // exports.getIncome = getIncome;
 // exports.createNewIncomePartition = createNewIncomePartition;
 // exports.getIncomePartition = getIncomePartition;

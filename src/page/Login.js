@@ -27,7 +27,7 @@ export default function Login() {
             const pubKey = await getPubKey();
             const JsEncrypt = new JSEncrypt();
             JsEncrypt.setPublicKey(pubKey);
-            // console.log(pubKey);
+            console.log(pubKey);
             const encryUsername = JsEncrypt.encrypt(username);
             const encryPassword = JsEncrypt.encrypt(password);
             console.log(encryUsername);
@@ -41,6 +41,7 @@ export default function Login() {
                 localStorage.setItem("u", userData.u);
                 localStorage.setItem("t", userData.t);
                 localStorage.setItem("ts", loginAt);
+                localStorage.setItem('validation', 2);     
             }
 
         } catch (error) {
@@ -49,6 +50,8 @@ export default function Login() {
             alert("Login fail");
         }
     }
+
+
 
     return(
         <Container fluid>
