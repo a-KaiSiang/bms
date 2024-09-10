@@ -30,10 +30,11 @@ async function getIncomeHandler(req, res){
         const incomeDetails = await getIncomeDetails(year, currentMonth, pass2Month.toString(), uid);
 
         res.status(200).json(incomeDetails);
-
+        return;
+        
     } catch (error) {
         console.error(error);
-        res.status(500).json({errMsg:error});
+        res.status(500).json({errMsg : error});
     }
 }
 

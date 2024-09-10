@@ -7,7 +7,7 @@ async function getPubKeyHandler(req, res){
         const cert = forge.pki.certificateFromPem(certPem);
         const pubKey = forge.pki.publicKeyToPem(cert.publicKey);
         
-        console.log(pubKey);
+        // console.log(pubKey);
 
         res.status(200).json(pubKey);
     }catch(error){

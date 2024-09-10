@@ -28,6 +28,8 @@ const getIncomePartitionHandler = require('./getIncomePartition');
 const insertNewTransactionHandler = require('./insertNewTransaction');
 const modifyTransactionHandler = require('./modifyTransaction');
 const deleteTransactionHandler = require('./deleteTransaction');
+const verifyUserIdentityHandler = require('./verifyUserIdentity');
+const userEditProfileHandler = require('./userEditProfile');
 
 express.get('/getIncomePartition', getIncomePartitionHandler);
 express.get('/getIncome', verifyUser, getIncomeDetailsHandler);
@@ -35,6 +37,8 @@ express.get('/getTransaction', verifyUser, getTransactionHandler);
 
 express.post('/addIncomePartition', verifyUser, addIncomePartitionHandler);
 express.post('/insertNewTransaction', verifyUser, insertNewTransactionHandler);
+express.post('/verifyUserIdentity', verifyUserIdentityHandler);
+express.post('/userEditProfile', userEditProfileHandler);
 
 express.put('/modifyTransaction', verifyUser, modifyTransactionHandler);
 express.delete('/deleteTransaction/:tid', deleteTransactionHandler);

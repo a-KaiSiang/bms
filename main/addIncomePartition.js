@@ -51,7 +51,7 @@ async function addIncomePartitionHandler(req, res){
         const resultOfInsert = await insertNewIncomePartition(date, partitionRow, uid);
 
         //return message to client to indorm client that partition create successfully.
-        res.status(200).json({message: "Insert Success"});
+        res.status(200).json({msg: "Insert Success"});
         
     }catch(errMsg){
         console.error(errMsg);

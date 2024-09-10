@@ -65,8 +65,6 @@ async function verifyUserToken(username,token){
     }
 }
 
-verifyUserToken();
-
 async function insertNewIncomePartition(date, partitionRow, uid){
 
     let connection;
@@ -85,7 +83,7 @@ async function insertNewIncomePartition(date, partitionRow, uid){
         const queryPartition = 'SELECT id FROM incomepartition WHERE createdDate = ?';
         const [result] = await connection.query(queryPartition, `${formattedDate}`);
         if(result.length > 0){
-            throw new Error(`Partition for ${month}-${year} was created, please edit it instead.`);
+            throw new Error(`Partition for ${month}-${year} was created.`);
         }
 
         //begin transaction to insert data.
@@ -198,9 +196,9 @@ async function getTransactionData(month, year, userId){
     try {
         connection = await pool.getConnection();
 
-        const query = `SELECT * FROM transactions WHERE MONTH(createdDate) = ? AND YEAR(createdDate) = ? AND userId = ${userId}`;
+        const query = `SELECT * FROM transactions WHERE MONTH(createdDate) = ? AND YEAR(createdDate) = ? AND userId = ? ORDER BY id DESC`;
 
-        const [transactions] = await connection.query(query,[month, year]);
+        const [transactions] = await connection.query(query,[month, year, userId]);
 
         // console.log(transactions);
         return transactions;
@@ -405,6 +403,71 @@ async function createUser(username, password){
     }
 }
 
+async function verifyUserIdentity(username, password, token){
+    let connection; 
+
+    try {
+        connection = await pool.getConnection();
+        const query = "SELECT username, password, token FROM users WHERE BINARY username = ? LIMIT 1";
+
+        const [resultUserInfo] = await connection.query(query, [username]);
+        console.log(resultUserInfo);
+        const userInfo = resultUserInfo[0];
+
+        if(userInfo['password'] !== password || userInfo['token'] !== token){
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Unexpected error occurs when querying user identity', error);
+        throw error;
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
+async function updateProfile(updatedUserProfile){
+    let connection; 
+
+    try {
+        connection = await pool.getConnection();
+        const {nu, np, u} = updatedUserProfile;
+
+        await connection.beginTransaction();
+        const setUsernameQuery = "username = ?";
+        const setPasswordQuery = "password = ?";
+
+        const query = `UPDATE users SET${nu ? setUsernameQuery + "," : ""} ${np ? setPasswordQuery : ""} WHERE username = ?`;
+        let value = [];
+        if(nu !== '') value.push(nu);
+        if(np !== '') value.push(np);
+        value.push(u);
+
+        console.log(query); 
+        console.log(value);
+        
+        const [resultUpdateProfile] = await connection.query(query, value);
+        // console.log(resultUpdateProfile);
+        
+        await connection.commit();
+        return resultUpdateProfile;
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('Unexpected error occurs when updating profile.', error);
+        throw error;
+
+    } finally {
+        if(connection){
+            connection.release();
+        }
+    }
+}
+
 exports.login = login;
 exports.verifyUserToken = verifyUserToken;
 exports.getIncomeDetails = getIncomeDetails;
@@ -417,3 +480,5 @@ exports.modifyTransaction = modifyTransaction;
 exports.deleteTransaction = deleteTransaction;
 exports.verifyAdminToken = verifyAdminToken;
 exports.createUser = createUser;
+exports.verifyUserIdentity = verifyUserIdentity;
+exports.updateProfile = updateProfile;
