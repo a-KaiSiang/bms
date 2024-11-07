@@ -4,7 +4,10 @@ const IncomePartitionDataSample = [
     {name:"EWallet", date:"2024-06-24", distributed:"1000", balance:"100", expenses:"1000", income:"3000"}
 ]
 
-const serverUrl = "http://localhost:3030"
+// const serverUrl = "http://localhost:3030"
+// const serverUrl = "https://mybudget.world";
+const serverUrl = process.env.NODE_ENV === 'production' ? "https://mybudget.world" : "http://localhost:3030";
+
 
 export async function getPubKey(){
     try {

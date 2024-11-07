@@ -37,9 +37,13 @@ export default function Transaction(){
     }, [transactionDate.getMonth(), transactionDate.getFullYear()])
 
     useEffect(() => {
+        fetchTransaction();
+    }, [])
+
+    useEffect(() => {
         const requestIncomePartition = async() => {
             try {
-                console.log('getting income partition');
+                // console.log('getting income partition');
                 const username = localStorage.getItem("u");
                 const token = localStorage.getItem("t");
 
@@ -56,7 +60,7 @@ export default function Transaction(){
         }
 
         requestIncomePartition();
-    }, [transactionDate.getMonth(), transactionDate.getFullYear()])
+    }, [transactionDate.getMonth(), transactionDate.getFullYear(), currentTransaction])
 
     useEffect(()=>{
         fetchTransaction();
@@ -70,7 +74,7 @@ export default function Transaction(){
     }
 
     async function handleSubmit(){
-        console.log(newTransaction);
+        // console.log(newTransaction);
         try {
             const username = localStorage.getItem("u");
             const token = localStorage.getItem("t");
@@ -141,7 +145,7 @@ export default function Transaction(){
             <div className={`${styles.transactionTable}`}>
                 <div className={styles.scrollContainer} style={{ overflowY:"scroll", overflowX:"hidden"}}>
                     <InsertNewTransaction newTransaction={newTransaction} setNewTransaction={setNewTransaction} incomePartition={incomePartition}/>
-                    {currentTransaction != [] && <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition}/>}
+                    {currentTransaction != [] && <TransactionRow currentTransaction={currentTransaction} incomePartition={incomePartition} RefreshPage={RefreshPage}/>}
                 </div>
                 {newTransaction.length > 0 && <div className="confirmNewTransaction"><button style={{width:"30%"}} onClick={handleSubmit}>Confirm</button></div>}
             </div>
@@ -150,12 +154,12 @@ export default function Transaction(){
     )
 }
 
-function TransactionRow({currentTransaction, incomePartition}) {
+function TransactionRow({currentTransaction, incomePartition, RefreshPage}) {
     function initializeEditState(){
         if(currentTransaction == []){
             return {};
         }
-        console.log(currentTransaction);
+        // console.log(currentTransaction);
         return ( 
             currentTransaction.reduce((initializedRow, transRow) => {
                 return {
@@ -177,7 +181,7 @@ function TransactionRow({currentTransaction, incomePartition}) {
             }
             const eee = initializeEditState();
                 
-            console.log(eee);
+            // console.log(eee);
             setEditingTransaction(eee);
             console.log('Current transaction at this month found');
         }
@@ -206,17 +210,17 @@ function TransactionRow({currentTransaction, incomePartition}) {
         setBufferForEditingTran(formattedTransactionBuffer);
     }, [currentTransaction])
 
-    useEffect(()=>{
-        console.log(bufferForEditingTran)
-    }, [bufferForEditingTran]);
+    // useEffect(()=>{
+    //     console.log(bufferForEditingTran)
+    // }, [bufferForEditingTran]);
 
     function handleEdit(transactionId){
-        console.log(transactionId);
+        // console.log(transactionId);
         const enableItemToUpdate = {
             ...editingTransaction,
             [`${transactionId}`] : true
         }
-        console.log(editingTransaction);
+        // console.log(editingTransaction);
 
         setEditingTransaction(enableItemToUpdate);
     }
@@ -249,7 +253,7 @@ function TransactionRow({currentTransaction, incomePartition}) {
                 return dataRow;
             }
         });
-        console.log(revertedArr);
+        // console.log(revertedArr);
         setBufferForEditingTran(revertedArr);
     }
 
@@ -257,7 +261,7 @@ function TransactionRow({currentTransaction, incomePartition}) {
         try {
             //validate.
             const savingData = bufferForEditingTran.filter(bufferRow => bufferRow.id === transactionId);
-            console.log(savingData);
+            // console.log(savingData);
             // return
 
             //id must be unique.
@@ -332,8 +336,8 @@ function TransactionRow({currentTransaction, incomePartition}) {
                 }
     
                 const queryResult = await deleteTransaction(transactionId);
-                console.log(queryResult);
                 alert(queryResult);
+                RefreshPage();
             }else{
                 alert('Delete cancel...');
             }
@@ -502,7 +506,7 @@ function InsertNewTransaction({newTransaction, setNewTransaction, incomePartitio
         const initializeNewTransaction = async () => {
             // console.log(newTransaction);
             let initNewTransactionRow =  [...newTransaction];
-            console.log(initNewTransactionRow);
+            // console.log("init new transaction row ", initNewTransactionRow);
             initNewTransactionRow.forEach(rowData => {
                 if(incomePartition.length === 0){
                     alert('Failed to retrieve income partition for current month.');
